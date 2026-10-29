@@ -1,11 +1,5 @@
 """
 In-memory backend for the Sheepin Breeding Agent.
-
-Implements the nine tools in tools.json with the validation and calendar
-rules from calendar_rules.md. Replace with the real database layer later;
-the agent only calls dispatch(name, args) and reads the returned dict.
-
-All dates are naive local date-times (ISO 8601 strings in, ISO strings out).
 """
 
 import json
@@ -252,9 +246,12 @@ class Backend:
 
     # ---------- read model ----------
     def silsilah(self, ear_tag, depth=3):
-        a = self.animals.get(ear_tag)
-        if not a or depth == 0:
+        if not ear_tag or depth == 0:
             return None
+        a = self.animals.get(ear_tag)
+        if not a:  # known id, but no record in the herd (bought-in parent, old data)
+            return {"ear_tag": ear_tag, "jenis_kelamin": None, "dam": None, "sire": None, "anak": [],
+                    "tidak_ada_di_kawanan": True}
         return {"ear_tag": ear_tag, "jenis_kelamin": a.get("jenis_kelamin"),
                 "dam": self.silsilah(a.get("dam"), depth - 1) if a.get("dam") else None,
                 "sire": self.silsilah(a.get("sire"), depth - 1) if a.get("sire") else None,

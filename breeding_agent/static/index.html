@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Sheepin Breeding Agent</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3f6f2;
+        --panel: #ffffff;
+        --ink: #17201a;
+        --muted: #5c6b61;
+        --line: #d6dfd8;
+        --green: #1f5f3f;
+        --green-soft: #dcebe1;
+        --amber: #b8780e;
+        --amber-soft: #fbefd2;
+        --red: #9e2b25;
+        --red-soft: #f6dedc;
+        --radius: 14px;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #121a15;
+          --panel: #1a241d;
+          --ink: #ecf1ec;
+          --muted: #a3b3a8;
+          --line: #2c3a30;
+          --green: #7bc59a;
+          --green-soft: #1e3327;
+          --amber: #e6b45c;
+          --amber-soft: #3a2e12;
+          --red: #e58c85;
+          --red-soft: #3d1f1d;
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #121a15;
+        --panel: #1a241d;
+        --ink: #ecf1ec;
+        --muted: #a3b3a8;
+        --line: #2c3a30;
+        --green: #7bc59a;
+        --green-soft: #1e3327;
+        --amber: #e6b45c;
+        --amber-soft: #3a2e12;
+        --red: #e58c85;
+        --red-soft: #3d1f1d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-padding-top: env(safe-area-inset-top, 0px);
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+        font-size: 17px;
+        line-height: 1.45;
+      }
+      header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.1rem 1.25rem 0.5rem;
+        max-width: 1180px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+      }
+      header h1 {
+        font-size: 1.35rem;
+        margin: 0;
+        font-weight: 700;
+        color: var(--green);
+      }
+      header p {
+        margin: 0;
+        color: var(--muted);
+      }
+      .lang button {
+        background: none;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        border-radius: 999px;
+        padding: 0.2rem 0.7rem;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.9rem;
+      }
+      .lang button[aria-pressed="true"] {
+        background: var(--green);
+        color: #fff;
+        border-color: var(--green);
+      }
+      main {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0.5rem 1.25rem 2rem;
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 1.25rem;
+      }
+      @media (max-width: 860px) {
+        main {
+          grid-template-columns: 1fr;
+        }
+      }
+      section {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 1.1rem 1.2rem;
+        min-width: 0;
+      }
+      h2 {
+        font-size: 1.05rem;
+        margin: 0 0 0.75rem;
+      }
+      .recorder {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.9rem;
+      }
+      .mic {
+        width: 84px;
+        height: 84px;
+        border-radius: 50%;
+        border: 0;
+        background: var(--green);
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        flex: 0 0 auto;
+        transition: transform 0.15s;
+      }
+      .mic:focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 3px;
+      }
+      .mic[data-rec="1"] {
+        background: var(--red);
+        animation: pulse 1.2s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        50% {
+          transform: scale(1.06);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .mic[data-rec="1"] {
+          animation: none;
+        }
+      }
+      .mic svg {
+        width: 36px;
+        height: 36px;
+      }
+      .hint {
+        color: var(--muted);
+        margin: 0;
+      }
+      .hint strong {
+        color: var(--ink);
+        font-weight: 700;
+      }
+      textarea {
+        width: 100%;
+        min-height: 84px;
+        resize: vertical;
+        font: inherit;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.6rem 0.75rem;
+      }
+      textarea:focus-visible,
+      input:focus-visible,
+      button:focus-visible {
+        outline: 3px solid var(--amber);
+        outline-offset: 2px;
+      }
+      .row {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+        margin-top: 0.6rem;
+        flex-wrap: wrap;
+      }
+      .btn {
+        font: inherit;
+        border-radius: 999px;
+        padding: 0.55rem 1.1rem;
+        cursor: pointer;
+        border: 1px solid var(--green);
+        background: var(--green);
+        color: #fff;
+        font-weight: 700;
+      }
+      .btn.secondary {
+        background: transparent;
+        color: var(--green);
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .status {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+      .log {
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        max-height: 52vh;
+        overflow: auto;
+      }
+      .turn {
+        border-top: 1px solid var(--line);
+        padding-top: 0.7rem;
+      }
+      .turn .you {
+        color: var(--muted);
+        margin: 0 0 0.3rem;
+      }
+      .turn .you::before {
+        content: "Peternak: ";
+        color: var(--ink);
+        font-weight: 700;
+      }
+      .turn .agent {
+        margin: 0;
+        white-space: pre-wrap;
+      }
+      .calls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.5rem;
+      }
+      .call {
+        font-size: 0.85rem;
+        border-radius: 8px;
+        padding: 0.2rem 0.55rem;
+        background: var(--green-soft);
+        color: var(--green);
+      }
+      .call.rejected {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+      .call.lookup {
+        background: var(--bg);
+        color: var(--muted);
+        border: 1px solid var(--line);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.97rem;
+      }
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 400;
+        border-bottom: 1px solid var(--line);
+        padding: 0.3rem 0.4rem;
+      }
+      td {
+        padding: 0.45rem 0.4rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      tr.row-animal {
+        cursor: pointer;
+      }
+      tr.row-animal:hover td,
+      tr.row-animal[aria-selected="true"] td {
+        background: var(--green-soft);
+      }
+      .dot {
+        display: inline-block;
+        width: 0.65em;
+        height: 0.65em;
+        border-radius: 50%;
+        margin-right: 0.4em;
+        background: var(--muted);
+      }
+      .dot.kosong {
+        background: var(--muted);
+      }
+      .dot.dikawinkan {
+        background: var(--amber);
+      }
+      .dot.indikasi_bunting {
+        background: var(--amber);
+      }
+      .dot.bunting {
+        background: var(--green);
+      }
+      .dot.menyusui {
+        background: var(--green);
+      }
+      .dot.anak {
+        background: var(--line);
+      }
+      .dot.pejantan {
+        background: var(--ink);
+      }
+      .detail {
+        margin-top: 1rem;
+        border-top: 1px solid var(--line);
+        padding-top: 0.8rem;
+      }
+      .detail h3 {
+        margin: 0 0 0.4rem;
+        font-size: 1rem;
+      }
+      .detail ul {
+        margin: 0.2rem 0 0.8rem 1.1rem;
+        padding: 0;
+      }
+      .tree {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+        font-size: 0.95rem;
+      }
+      .node {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.4rem 0.6rem;
+      }
+      .node .lbl {
+        color: var(--muted);
+        font-size: 0.85rem;
+        display: block;
+      }
+      .tree .self {
+        grid-column: 1 / -1;
+        background: var(--green-soft);
+        border-color: transparent;
+      }
+      .empty {
+        color: var(--muted);
+      }
+      footer {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 0 1.25rem 1.5rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+      .notice {
+        background: var(--amber-soft);
+        color: var(--ink);
+        border-radius: 10px;
+        padding: 0.5rem 0.75rem;
+        margin-bottom: 0.8rem;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>
+        <h1>Sheepin Breeding Agent</h1>
+        <p data-i18n="tagline">
+          Ceritakan apa yang terjadi di kandang. Agen mencatatnya, menghitung
+          kalendernya, dan menyusun silsilahnya.
+        </p>
+      </div>
+      <div class="lang" role="group" aria-label="Bahasa">
+        <button type="button" data-lang="id" aria-pressed="true">ID</button>
+        <button type="button" data-lang="en" aria-pressed="false">EN</button>
+      </div>
+    </header>
+
+    <main>
+      <section aria-labelledby="h-catatan">
+        <h2 id="h-catatan" data-i18n="notes">Catatan hari ini</h2>
+        <div class="notice" id="mic-notice" hidden data-i18n="noMic">
+          Mikrofon tidak tersedia di browser ini. Ketik catatannya saja.
+        </div>
+        <div class="recorder">
+          <button
+            class="mic"
+            id="mic"
+            type="button"
+            aria-label="Rekam catatan"
+            data-rec="0"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <rect
+                x="9"
+                y="3"
+                width="6"
+                height="11"
+                rx="3"
+                fill="currentColor"
+                stroke="none"
+              />
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+            </svg>
+          </button>
+          <p class="hint" id="rec-hint">
+            <strong data-i18n="tapRecord">Tekan untuk merekam</strong>,
+            <span data-i18n="tapStop">tekan lagi untuk berhenti.</span
+            ><br /><span data-i18n="example"
+              >Contoh: “0266 dikawinkan dengan 0931 tadi pagi jam 7.”</span
+            >
+          </p>
+        </div>
+        <label for="note" class="status" data-i18n="transcriptLabel"
+          >Transkrip (periksa dan koreksi sebelum dicatat)</label
+        >
+        <textarea id="note" placeholder="…"></textarea>
+        <div class="row">
+          <button class="btn" id="send" type="button" data-i18n="record">
+            Catat
+          </button>
+          <button
+            class="btn secondary"
+            id="clear"
+            type="button"
+            data-i18n="clear"
+          >
+            Kosongkan
+          </button>
+          <span class="status" id="status"></span>
+        </div>
+        <div class="log" id="log" aria-live="polite"></div>
+      </section>
+
+      <section aria-labelledby="h-kawanan">
+        <h2 id="h-kawanan" data-i18n="herd">Kawanan</h2>
+        <table>
+          <thead>
+            <tr>
+              <th data-i18n="earTag">Ear tag</th>
+              <th data-i18n="status">Status</th>
+              <th data-i18n="next">Berikutnya</th>
+            </tr>
+          </thead>
+          <tbody id="herd"></tbody>
+        </table>
+        <div class="detail" id="detail" hidden>
+          <h3 id="d-title"></h3>
+          <div id="d-calendar"></div>
+          <h3 data-i18n="pedigree">Silsilah</h3>
+          <div class="tree" id="d-tree"></div>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span id="model"></span>
+      <span id="usage"></span>
+      <button
+        class="btn secondary"
+        id="reset"
+        type="button"
+        style="padding: 0.2rem 0.8rem; font-weight: 400"
+        data-i18n="reset"
+      >
+        Mulai ulang demo
+      </button>
+    </footer>
+
+    <script>
+      const T = {
+        id: {
+          tagline:
+            "Ceritakan apa yang terjadi di kandang. Agen mencatatnya, menghitung kalendernya, dan menyusun silsilahnya.",
+          notes: "Catatan hari ini",
+          noMic:
+            "Mikrofon tidak tersedia di browser ini. Ketik catatannya saja.",
+          tapRecord: "Tekan untuk merekam",
+          tapStop: "tekan lagi untuk berhenti.",
+          example: "Contoh: “0266 dikawinkan dengan 0931 tadi pagi jam 7.”",
+          transcriptLabel: "Transkrip (periksa dan koreksi sebelum dicatat)",
+          record: "Catat",
+          clear: "Kosongkan",
+          herd: "Kawanan",
+          earTag: "Ear tag",
+          status: "Status",
+          next: "Berikutnya",
+          pedigree: "Silsilah",
+          reset: "Mulai ulang demo",
+          recording: "Merekam…",
+          transcribing: "Mengubah suara menjadi teks…",
+          thinking: "Mencatat…",
+          none: "Belum ada catatan.",
+          dam: "Induk",
+          sire: "Pejantan",
+          offspring: "Anak",
+          unknown: "tidak diketahui",
+          notInHerd: "tidak ada di kawanan",
+          noNext: "tidak ada jadwal",
+          st: {
+            kosong: "kosong",
+            dikawinkan: "dikawinkan",
+            indikasi_bunting: "indikasi bunting",
+            bunting: "bunting",
+            menyusui: "menyusui",
+            anak: "anak",
+            pejantan: "pejantan",
+          },
+        },
+        en: {
+          tagline:
+            "Say what happened in the pen. The agent records it, works out the calendar and builds the pedigree.",
+          notes: "Today's notes",
+          noMic: "No microphone in this browser. Type the note instead.",
+          tapRecord: "Tap to record",
+          tapStop: "tap again to stop.",
+          example: "Example: “0266 was mated with 0931 this morning at 7.”",
+          transcriptLabel: "Transcript (check and correct before recording)",
+          record: "Record",
+          clear: "Clear",
+          herd: "Herd",
+          earTag: "Ear tag",
+          status: "Status",
+          next: "Next",
+          pedigree: "Pedigree",
+          reset: "Restart demo",
+          recording: "Recording…",
+          transcribing: "Turning speech into text…",
+          thinking: "Recording…",
+          none: "No notes yet.",
+          dam: "Dam",
+          sire: "Sire",
+          offspring: "Offspring",
+          unknown: "unknown",
+          notInHerd: "not in herd",
+          noNext: "nothing scheduled",
+          st: {
+            kosong: "open",
+            dikawinkan: "mated",
+            indikasi_bunting: "likely pregnant",
+            bunting: "pregnant",
+            menyusui: "nursing",
+            anak: "lamb",
+            pejantan: "ram",
+          },
+        },
+      };
+      let lang = localStorage.getItem("sheepin.lang") || "id";
+      const t = (k) => T[lang][k];
+      function applyLang() {
+        document.documentElement.lang = lang;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          el.textContent = t(el.dataset.i18n);
+        });
+        document
+          .querySelectorAll(".lang button")
+          .forEach((b) =>
+            b.setAttribute("aria-pressed", b.dataset.lang === lang),
+          );
+        loadHerd();
+      }
+      document.querySelectorAll(".lang button").forEach((b) =>
+        b.addEventListener("click", () => {
+          lang = b.dataset.lang;
+          localStorage.setItem("sheepin.lang", lang);
+          applyLang();
+        }),
+      );
+
+      const session =
+        localStorage.getItem("sheepin.session") ||
+        (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
+      localStorage.setItem("sheepin.session", session);
+      const $ = (id) => document.getElementById(id);
+      const note = $("note"),
+        log = $("log"),
+        status = $("status");
+
+      // ---------- recording ----------
+      let rec = null,
+        chunks = [];
+      const micBtn = $("mic");
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        $("mic-notice").hidden = false;
+        micBtn.disabled = true;
+      }
+      micBtn.addEventListener("click", async () => {
+        if (micBtn.dataset.rec === "1") {
+          rec.stop();
+          return;
+        }
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: true,
+          });
+          chunks = [];
+          rec = new MediaRecorder(stream);
+          rec.ondataavailable = (e) => chunks.push(e.data);
+          rec.onstop = async () => {
+            stream.getTracks().forEach((tr) => tr.stop());
+            micBtn.dataset.rec = "0";
+            status.textContent = t("transcribing");
+            try {
+              const wav = await toWav(new Blob(chunks, { type: rec.mimeType }));
+              const r = await fetch("/api/transcribe", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ audio_b64: wav, mime: "audio/wav" }),
+              });
+              const j = await r.json();
+              if (!r.ok) throw new Error(j.detail || r.statusText);
+              note.value = j.text;
+              note.focus();
+              status.textContent = "";
+            } catch (e) {
+              status.textContent = String(e.message || e);
+            }
+          };
+          rec.start();
+          micBtn.dataset.rec = "1";
+          status.textContent = t("recording");
+        } catch (e) {
+          $("mic-notice").hidden = false;
+        }
+      });
+
+      // Decode whatever the browser recorded and re-encode as 16 kHz mono PCM WAV (base64).
+      async function toWav(blob) {
+        const buf = await blob.arrayBuffer();
+        const ac = new (window.AudioContext || window.webkitAudioContext)();
+        const decoded = await ac.decodeAudioData(buf);
+        const rate = 16000,
+          len = Math.ceil(decoded.duration * rate);
+        const oac = new OfflineAudioContext(1, len, rate);
+        const src = oac.createBufferSource();
+        src.buffer = decoded;
+        src.connect(oac.destination);
+        src.start();
+        const mono = (await oac.startRendering()).getChannelData(0);
+        const out = new DataView(new ArrayBuffer(44 + mono.length * 2));
+        const str = (o, s) => {
+          for (let i = 0; i < s.length; i++)
+            out.setUint8(o + i, s.charCodeAt(i));
+        };
+        str(0, "RIFF");
+        out.setUint32(4, 36 + mono.length * 2, true);
+        str(8, "WAVE");
+        str(12, "fmt ");
+        out.setUint32(16, 16, true);
+        out.setUint16(20, 1, true);
+        out.setUint16(22, 1, true);
+        out.setUint32(24, rate, true);
+        out.setUint32(28, rate * 2, true);
+        out.setUint16(32, 2, true);
+        out.setUint16(34, 16, true);
+        str(36, "data");
+        out.setUint32(40, mono.length * 2, true);
+        for (let i = 0; i < mono.length; i++) {
+          const s = Math.max(-1, Math.min(1, mono[i]));
+          out.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        }
+        let bin = "";
+        const bytes = new Uint8Array(out.buffer);
+        for (let i = 0; i < bytes.length; i += 0x8000)
+          bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+        return btoa(bin);
+      }
+
+      // ---------- chat ----------
+      $("send").addEventListener("click", send);
+      note.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) send();
+      });
+      $("clear").addEventListener("click", () => {
+        note.value = "";
+        note.focus();
+      });
+      async function send() {
+        const text = note.value.trim();
+        if (!text) return;
+        $("send").disabled = true;
+        status.textContent = t("thinking");
+        const turn = document.createElement("div");
+        turn.className = "turn";
+        turn.innerHTML = `<p class="you"></p><p class="agent">…</p><div class="calls"></div>`;
+        turn.querySelector(".you").textContent = text;
+        log.prepend(turn);
+        try {
+          const r = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ session_id: session, text }),
+          });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j.detail || r.statusText);
+          turn.querySelector(".agent").textContent = j.reply;
+          const calls = turn.querySelector(".calls");
+          for (const c of j.calls) {
+            const el = document.createElement("span");
+            const ok =
+              c.name === "cari_ternak"
+                ? "lookup"
+                : c.result && c.result.ok
+                  ? ""
+                  : "rejected";
+            el.className = "call " + ok;
+            el.textContent =
+              c.name === "cari_ternak"
+                ? `cari ${c.args.ear_tag}`
+                : `${c.name.replace("catat_", "")} ${c.args.ear_tag || ""}${ok === "rejected" ? ": " + (c.result.error || "") : ""}`;
+            calls.appendChild(el);
+          }
+          $("model").textContent = `${j.provider} · ${j.model}`;
+          $("usage").textContent =
+            `tokens: ${j.usage.prompt} in, ${j.usage.completion} out (${j.usage.reasoning} reasoning)`;
+          note.value = "";
+          status.textContent = "";
+          loadHerd();
+        } catch (e) {
+          turn.querySelector(".agent").textContent = String(e.message || e);
+          status.textContent = "";
+        }
+        $("send").disabled = false;
+      }
+
+      // ---------- herd, calendar, pedigree ----------
+      let selected = null;
+      async function loadHerd() {
+        const j = await (await fetch("/api/herd")).json();
+        const tb = $("herd");
+        tb.innerHTML = "";
+        const order = { betina: 0, jantan: 1 };
+        j.ternak.sort(
+          (a, b) =>
+            (order[a.jenis_kelamin] ?? 2) - (order[b.jenis_kelamin] ?? 2) ||
+            a.ear_tag.localeCompare(b.ear_tag),
+        );
+        for (const a of j.ternak) {
+          const tr = document.createElement("tr");
+          tr.className = "row-animal";
+          tr.setAttribute("aria-selected", a.ear_tag === selected);
+          const st =
+            a.status || (a.jenis_kelamin === "jantan" ? "pejantan" : "kosong");
+          const next =
+            a.kalender && a.kalender.berikutnya.length
+              ? a.kalender.berikutnya
+                  .map(
+                    (n) =>
+                      `${n.apa} ${n.mulai}${n.sampai ? "–" + n.sampai : ""}`,
+                  )
+                  .join("; ")
+              : "";
+          tr.innerHTML = `<td>${a.ear_tag}</td><td><span class="dot ${st}"></span>${t("st")[st] || st}${a.kalender && a.kalender.larangan_kawin ? " ⚠" : ""}</td><td class="status">${next || (a.jenis_kelamin === "betina" ? t("noNext") : "")}</td>`;
+          tr.addEventListener("click", () => {
+            selected = a.ear_tag;
+            loadHerd();
+            showDetail(a);
+          });
+          tb.appendChild(tr);
+        }
+        if (selected) {
+          const a = j.ternak.find((x) => x.ear_tag === selected);
+          if (a) showDetail(a);
+        }
+      }
+      async function showDetail(a) {
+        const d = $("detail");
+        d.hidden = false;
+        $("d-title").textContent =
+          `${a.ear_tag} · ${a.ras || ""} · ${a.umur_bulan != null ? a.umur_bulan + " bln" : ""}`;
+        const cal = $("d-calendar");
+        if (a.kalender && a.kalender.berikutnya.length)
+          cal.innerHTML =
+            "<ul>" +
+            a.kalender.berikutnya
+              .map(
+                (n) =>
+                  `<li>${n.apa}: ${n.mulai}${n.sampai ? " – " + n.sampai : ""}</li>`,
+              )
+              .join("") +
+            "</ul>";
+        else cal.innerHTML = `<p class="empty">${t("noNext")}</p>`;
+        const tree = await (
+          await fetch(`/api/silsilah/${encodeURIComponent(a.ear_tag)}`)
+        ).json();
+        const node = (lbl, n) =>
+          `<div class="node"><span class="lbl">${lbl}</span>${n ? n.ear_tag : t("unknown")}${n && n.tidak_ada_di_kawanan ? ` <span class="lbl">(${t("notInHerd")})</span>` : ""}${n && (n.dam || n.sire) ? `<br><span class="lbl">${t("dam")}: ${n.dam ? n.dam.ear_tag : "?"} · ${t("sire")}: ${n.sire ? n.sire.ear_tag : "?"}</span>` : ""}</div>`;
+        $("d-tree").innerHTML =
+          `<div class="node self"><span class="lbl">${t("offspring")}</span>${tree.anak.length ? tree.anak.join(", ") : "–"}</div>` +
+          node(t("dam"), tree.dam) +
+          node(t("sire"), tree.sire);
+      }
+      $("reset").addEventListener("click", async () => {
+        await fetch("/api/reset", { method: "POST" });
+        log.innerHTML = "";
+        selected = null;
+        loadHerd();
+      });
+
+      applyLang();
+    </script>
+  </body>
+</html>
