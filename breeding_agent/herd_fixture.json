@@ -1,0 +1,7 @@
+[
+  {"ear_tag": "0266", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 26, "status": "kosong", "dam": "0102", "sire": "0931"},
+  {"ear_tag": "0582", "jenis_kelamin": "betina", "ras": "ekor_tipis", "umur_bulan": 18, "status": "kosong", "dam": null, "sire": null},
+  {"ear_tag": "0744", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 38, "status": "bunting", "kawin_terakhir": {"pejantan": "0931", "waktu": "2026-06-02T07:00:00"}, "dam": "0088", "sire": "0501"},
+  {"ear_tag": "0417", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 30, "status": "dikawinkan", "kawin_terakhir": {"pejantan": "0931", "waktu": "2026-09-20T07:00:00"}, "dam": null, "sire": null},
+  {"ear_tag": "0931", "jenis_kelamin": "jantan", "ras": "garut", "umur_bulan": 42, "status": "pejantan", "dam": null, "sire": null}
+]

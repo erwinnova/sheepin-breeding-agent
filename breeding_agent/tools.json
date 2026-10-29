@@ -1,0 +1,251 @@
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "cari_ternak",
+      "description": "Look up animals in the farm's herd by ear tag (exact or partial). Call this first whenever the farmer mentions an ear tag, to confirm it exists and get its sex and reproductive status before recording anything.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": {
+            "type": "string",
+            "description": "Ear tag as spoken by the farmer, e.g. '0266' or 'T201199'"
+          }
+        },
+        "required": ["ear_tag"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_birahi",
+      "description": "Record an observed estrus (birahi) in a female. Only call when the farmer says the animal showed heat signs. Do not call for mating.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string" },
+          "waktu": {
+            "type": "string",
+            "description": "ISO 8601 local date-time of the observation. Resolve 'tadi pagi', 'this morning', 'kemarin sore' using the current time given in the system prompt. If only the date is known, use T08:00 and set waktu_perkiraan=true."
+          },
+          "waktu_perkiraan": {
+            "type": "boolean",
+            "description": "true if the time was estimated rather than stated"
+          },
+          "tanda": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "abang",
+                "aboh",
+                "anget",
+                "bengak_bengok",
+                "jingkrak_jingkrak",
+                "lain"
+              ]
+            },
+            "description": "Heat signs mentioned by the farmer, if any (red/swollen/warm vulva, bleating, restlessness)"
+          },
+          "ada_pejantan": {
+            "type": "boolean",
+            "description": "Whether a ram/teaser was present, if mentioned"
+          },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_kawin",
+      "description": "Record a mating (kawin). This is day zero of the reproductive calendar. The ram's ear tag is required; if the farmer did not say which ram, ask before calling.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": {
+            "type": "string",
+            "description": "The female's ear tag"
+          },
+          "pejantan": {
+            "type": "string",
+            "description": "The ram's ear tag, or the semen/straw code for artificial insemination"
+          },
+          "metode": {
+            "type": "string",
+            "enum": ["alam", "ib"],
+            "description": "alam = natural mating, ib = artificial insemination. Default alam unless the farmer says IB/inseminasi."
+          },
+          "waktu": {
+            "type": "string",
+            "description": "ISO 8601 local date-time"
+          },
+          "waktu_perkiraan": { "type": "boolean" },
+          "cara_diketahui": {
+            "type": "string",
+            "enum": ["dilihat", "cap_harness", "kamera", "lain"],
+            "description": "How the mating was detected, if mentioned"
+          },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "pejantan", "waktu"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_cek_bunting",
+      "description": "Record a pregnancy check result (USG, palpation, or non-return to estrus around day 17-21).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string" },
+          "waktu": {
+            "type": "string",
+            "description": "ISO 8601 local date-time"
+          },
+          "metode": {
+            "type": "string",
+            "enum": ["usg", "palpasi", "tidak_kembali_birahi", "lain"]
+          },
+          "hasil": {
+            "type": "string",
+            "enum": ["bunting", "tidak_bunting", "tidak_jelas"]
+          },
+          "jumlah_janin": {
+            "type": "integer",
+            "description": "Only if stated by the examiner"
+          },
+          "pemeriksa": {
+            "type": "string",
+            "description": "Name of the vet or technician, if mentioned"
+          },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu", "metode", "hasil"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_beranak",
+      "description": "Record a lambing (beranak). Creates one new animal record per live lamb with dam set to ear_tag and sire taken from the last recorded mating. Ask for the number born if not stated; ask for the time if only a vague period was given (e.g. 'semalam').",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string", "description": "The dam's ear tag" },
+          "waktu": {
+            "type": "string",
+            "description": "ISO 8601 local date-time of lambing"
+          },
+          "waktu_perkiraan": { "type": "boolean" },
+          "jumlah_lahir": { "type": "integer", "minimum": 1 },
+          "jumlah_mati": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Lambs born dead or died shortly after. 0 if the farmer says all are alive; ask if unclear."
+          },
+          "bantuan": {
+            "type": "string",
+            "enum": ["tanpa", "dibantu", "sulit"],
+            "description": "Only if mentioned"
+          },
+          "anak": {
+            "type": "array",
+            "description": "Details of each live lamb if the farmer gave them (sex, ear tag, birth weight). Leave empty if not stated; do not invent.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ear_tag": { "type": "string" },
+                "jenis_kelamin": {
+                  "type": "string",
+                  "enum": ["jantan", "betina"]
+                },
+                "bobot_lahir_kg": { "type": "number" }
+              }
+            }
+          },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu", "jumlah_lahir"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_keguguran",
+      "description": "Record an abortion/miscarriage (keguguran).",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string" },
+          "waktu": { "type": "string" },
+          "waktu_perkiraan": { "type": "boolean" },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_sapih",
+      "description": "Record weaning (sapih) of lambs from a dam, optionally with weaning weights.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": {
+            "type": "string",
+            "description": "The dam's ear tag, or a lamb's ear tag if the farmer refers to the lamb"
+          },
+          "waktu": { "type": "string" },
+          "bobot_sapih_kg": { "type": "number" },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "catat_bcs",
+      "description": "Record a body condition score (BCS) on the 1-5 scale, half points allowed.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string" },
+          "waktu": { "type": "string" },
+          "skor": { "type": "number", "minimum": 1, "maximum": 5 },
+          "penilai": { "type": "string" },
+          "catatan": { "type": "string" }
+        },
+        "required": ["ear_tag", "waktu", "skor"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "larang_kawin",
+      "description": "Mark an animal as not to be bred (larangan kawin), with a reason, or lift an existing ban.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "ear_tag": { "type": "string" },
+          "aksi": { "type": "string", "enum": ["larang", "cabut"] },
+          "alasan": { "type": "string" },
+          "waktu": { "type": "string" }
+        },
+        "required": ["ear_tag", "aksi", "waktu"]
+      }
+    }
+  }
+]

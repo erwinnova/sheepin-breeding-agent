@@ -1,0 +1,215 @@
+[
+  {
+    "id": 1,
+    "lang": "id",
+    "input": "0266 dikawinkan dengan 0931 tadi pagi jam 7",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_kawin",
+        "args": {
+          "ear_tag": "0266",
+          "pejantan": "0931",
+          "metode": "alam",
+          "waktu_perkiraan": false
+        }
+      }
+    ],
+    "note": "exact time given -> waktu today 07:00, not estimated"
+  },
+  {
+    "id": 2,
+    "lang": "id",
+    "input": "0582 kelihatan birahi, vulvanya merah dan dia gelisah terus",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_birahi",
+        "args": {
+          "ear_tag": "0582",
+          "tanda": ["abang", "jingkrak_jingkrak"]
+        }
+      }
+    ],
+    "note": "no time given -> ask or use now with waktu_perkiraan=true; acceptable: ask"
+  },
+  {
+    "id": 3,
+    "lang": "id",
+    "input": "0744 beranak dua semalam, satu mati",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_beranak",
+        "args": {
+          "ear_tag": "0744",
+          "jumlah_lahir": 2,
+          "jumlah_mati": 1,
+          "waktu_perkiraan": true
+        }
+      }
+    ],
+    "note": "semalam -> yesterday 21:00 estimated"
+  },
+  {
+    "id": 4,
+    "lang": "id",
+    "input": "0744 beranak semalam",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      }
+    ],
+    "expect_question": true,
+    "note": "number born missing -> must ask, must not call catat_beranak"
+  },
+  {
+    "id": 5,
+    "lang": "id",
+    "input": "0266 dikawinkan tadi sore",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      }
+    ],
+    "expect_question": true,
+    "note": "ram missing -> ask which ram"
+  },
+  {
+    "id": 6,
+    "lang": "en",
+    "input": "Vet scanned 0417 this afternoon, pregnant with twins",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_cek_bunting",
+        "args": {
+          "ear_tag": "0417",
+          "metode": "usg",
+          "hasil": "bunting",
+          "jumlah_janin": 2
+        }
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "lang": "id",
+    "input": "0266 dikawinkan dengan 0931 tadi pagi, 0582 kelihatan birahi tadi siang, 0744 beranak dua semalam, satu mati",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_kawin"
+      },
+      {
+        "name": "catat_birahi"
+      },
+      {
+        "name": "catat_beranak"
+      }
+    ],
+    "note": "three events in one note, all with a time; all three must be recorded"
+  },
+  {
+    "id": 8,
+    "lang": "id",
+    "input": "0931 dikawinkan dengan 0266 tadi pagi",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      }
+    ],
+    "expect_question": true,
+    "note": "0931 is male in the herd fixture -> agent must flag the swap, not record"
+  },
+  {
+    "id": 9,
+    "lang": "id",
+    "input": "BCS 0417 hari ini 2,5",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_bcs",
+        "args": {
+          "ear_tag": "0417",
+          "skor": 2.5
+        }
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "lang": "id",
+    "input": "0999 beranak tiga tadi pagi",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      }
+    ],
+    "expect_question": true,
+    "note": "0999 not in herd -> ask to confirm the tag"
+  },
+  {
+    "id": 11,
+    "lang": "en",
+    "input": "What should I feed 0266 after lambing?",
+    "expect_calls": [],
+    "note": "out of scope -> decline politely, no tool call"
+  },
+  {
+    "id": 12,
+    "lang": "id",
+    "input": "0266 kemarin birahi, hari ini dikawinkan dengan 0931 jam 9",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "cari_ternak"
+      },
+      {
+        "name": "catat_birahi",
+        "args": {
+          "ear_tag": "0266",
+          "waktu_perkiraan": true
+        }
+      },
+      {
+        "name": "catat_kawin",
+        "args": {
+          "ear_tag": "0266",
+          "pejantan": "0931",
+          "waktu_perkiraan": false
+        }
+      }
+    ],
+    "note": "two events for the same animal on different days"
+  }
+]
