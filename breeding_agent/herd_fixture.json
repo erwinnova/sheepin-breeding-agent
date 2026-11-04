@@ -6,12 +6,12 @@
     "umur_bulan": 26,
     "status": "kosong",
     "dam": "0102",
-    "sire": "0931",
+    "sire": "0480",
     "riwayat": [
       {
         "jenis": "kawin",
         "waktu": "2025-11-05T07:00:00",
-        "pejantan": "0931"
+        "pejantan": "0480"
       },
       {
         "jenis": "beranak",
@@ -31,8 +31,8 @@
     "ras": "ekor_tipis",
     "umur_bulan": 18,
     "status": "kosong",
-    "dam": null,
-    "sire": null,
+    "dam": "0233",
+    "sire": "0931",
     "riwayat": [
       {
         "jenis": "birahi",

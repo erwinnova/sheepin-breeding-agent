@@ -35,7 +35,10 @@
         "name": "catat_birahi",
         "args": {
           "ear_tag": "0582",
-          "tanda": ["abang", "jingkrak_jingkrak"]
+          "tanda": [
+            "abang",
+            "jingkrak_jingkrak"
+          ]
         }
       }
     ],
@@ -254,5 +257,18 @@
       }
     ],
     "note": "two read calls, answer from their results"
+  },
+  {
+    "id": 15,
+    "lang": "id",
+    "input": "0582 dikawinkan dengan 0931 tadi pagi jam 7",
+    "expect_calls": [
+      {
+        "name": "cari_ternak"
+      }
+    ],
+    "expect_refused": true,
+    "note": "0931 is the sire of 0582 -> father x daughter; the backend refuses, the agent passes the reason on",
+    "input_en": "0582 was mated with 0931 this morning at 7 (0931 is her sire)"
   }
 ]

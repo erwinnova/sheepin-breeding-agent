@@ -23,7 +23,7 @@ The agent:
 3. Resolves relative time in the farm's time zone: "this morning" = 07:00, "last night" = yesterday 21:00, flagged as estimated.
 4. Reads back what it saved and the dates the backend calculated: return-to-heat check 15–19 Nov, ultrasound 28 Dec, expected lambing 25 Mar 2027.
 5. Asks one short question when something required is missing (which ram? how many lambs?) instead of guessing.
-6. Refuses what it must not do: a ram recorded as a ewe, an unknown ear tag, a time in the future, a mating under a breeding ban, or health and feeding advice it is not qualified to give.
+6. Refuses what it must not do: a ram recorded as a ewe, an unknown ear tag, a time in the future, a mating under a breeding ban, a mating between close relatives, or health and feeding advice it is not qualified to give.
 
 It also answers questions from the records: _"Who needs checking today?"_, _"Is 0417 pregnant?"_, _"When is 0744 due?"_
 
@@ -41,7 +41,7 @@ flowchart LR
   B --> UI[Today list, herd,<br/>calendar, pedigree]
 ```
 
-The language model never writes to the herd directly. Every record goes through a tool, and the backend validates it: the ear tag exists, the dam is female and the sire is male, the time is not in the future, no active breeding ban. Dates and probabilities are always computed by the backend, never by the model; the system prompt forbids the agent from stating a date or likelihood that no tool returned.
+The language model never writes to the herd directly. Every record goes through a tool, and the backend validates it: the ear tag exists, the dam is female and the sire is male, the time is not in the future, no active breeding ban, and the ram and ewe are not closely related (parent and offspring, grandsire, or a shared parent, read from the pedigree). Dates and probabilities are always computed by the backend, never by the model; the system prompt forbids the agent from stating a date or likelihood that no tool returned.
 
 **11 tools** (`breeding_agent/tools.json`)
 
@@ -65,9 +65,9 @@ The language model never writes to the herd directly. Every record goes through 
 
 ## Tests
 
-`breeding_agent/test_cases.json` holds 14 bilingual cases scored by `run_tests.py`: the right tool calls with the right arguments, a question where data is missing, and a refusal where the note must not be recorded. They cover multi-event notes, relative times, a sire and dam swapped by the farmer, an unknown ear tag, out-of-scope advice, and questions answered only from tool results.
+`breeding_agent/test_cases.json` holds 15 bilingual cases scored by `run_tests.py`: the right tool calls with the right arguments, a question where data is missing, and a refusal where the note must not be recorded. They cover multi-event notes, relative times, a sire and dam swapped by the farmer, a father × daughter mating that must be refused, an unknown ear tag, out-of-scope advice, and questions answered only from tool results.
 
-**Latest run:** X/14 passed with Muse Spark Open on Baseten (fixed clock 2026-10-29 18:00 WIB). <!-- fill in from results_baseten.json -->
+**Latest run:** 15/15 passed with Muse Spark Open on Baseten (fixed clock 2026-10-29 18:00 WIB), 4.9 s per note on average, 8.6 s at most.
 
 ```powershell
 cd breeding_agent
@@ -116,7 +116,7 @@ breeding_agent/
   system_prompt.txt   agent rules
   calendar_rules.md   reproductive constants and status transitions
   herd_fixture.json   5-animal demo herd with reproductive history
-  test_cases.json     14 bilingual test cases
+  test_cases.json     15 bilingual test cases
   run_tests.py        scorer; writes results_*.json for /compare
   envfile.py          loads ../.env for local runs
   static/             index.html (demo), compare.html (test results)
@@ -129,9 +129,9 @@ firebase.json, .firebaserc   Firebase Hosting rewrite to Cloud Run
 Sheepin already makes RFID ear tags, a smart scale and a farm app in Indonesia. Everything in this repository was built during the hackathon:
 
 - The 11-tool contract, system prompt and agent loop on Muse Spark Open.
-- The backend: validation rules, reproductive calendar, per-ewe predictions with confidence, the "Today" checklist and pedigree.
+- The backend: validation rules including the inbreeding guard, reproductive calendar, per-ewe predictions with confidence, the "Today" checklist and pedigree.
 - Voice notes transcribed by the same model, with a transcript the farmer checks before anything is saved.
-- The bilingual demo app, per-visitor demo herds, the 14-case test suite and the `/compare` results page.
+- The bilingual demo app, per-visitor demo herds, the 15-case test suite and the `/compare` results page.
 - Deployment on Cloud Run with Secret Manager and Firebase Hosting.
 
 ## Limitations

@@ -486,7 +486,7 @@
             <strong data-i18n="tapRecord">Tekan untuk merekam</strong>,
             <span data-i18n="tapStop">tekan lagi untuk berhenti.</span
             ><br /><span data-i18n="example"
-              >Contoh: “0266 dikawinkan dengan 0931 tadi pagi jam 7.”</span
+              >Contoh: “0266 dikawinkan dengan 0931 kemarin jam 7.”</span
             >
           </p>
         </div>
@@ -560,7 +560,7 @@
             "Mikrofon tidak tersedia di browser ini. Ketik catatannya saja.",
           tapRecord: "Tekan untuk merekam",
           tapStop: "tekan lagi untuk berhenti.",
-          example: "Contoh: “0266 dikawinkan dengan 0931 tadi pagi jam 7.”",
+          example: "Contoh: “0266 dikawinkan dengan 0931 kemarin jam 7.”",
           transcriptLabel: "Transkrip (periksa dan koreksi sebelum dicatat)",
           record: "Catat",
           clear: "Kosongkan",
@@ -605,7 +605,7 @@
           noMic: "No microphone in this browser. Type the note instead.",
           tapRecord: "Tap to record",
           tapStop: "tap again to stop.",
-          example: "Example: “0266 was mated with 0931 this morning at 7.”",
+          example: "Example: “0266 was mated with 0931 yesterday at 7.”",
           transcriptLabel: "Transcript (check and correct before recording)",
           record: "Record",
           clear: "Clear",
@@ -711,6 +711,12 @@
         [/(\S+) adalah jantan, bukan betina/g, "$1 is a ram, not a ewe"],
         [/(\S+) adalah (\S+), bukan betina/g, "$1 is not a ewe"],
         [/(\S+) sedang dilarang kawin: /g, "$1 is under a breeding ban: "],
+        [/kawin sedarah ditolak: /g, "inbreeding refused: "],
+        [/(\S+) adalah ayah dari (\S+)/g, "$1 is the sire of $2"],
+        [/(\S+) adalah induk dari (\S+)/g, "$1 is the dam of $2"],
+        [/(\S+) adalah kakek dari (\S+)/g, "$1 is the grandsire of $2"],
+        [/(\S+) dan (\S+) punya tetua yang sama \(([^)]+)\)/g, "$1 and $2 share a parent ($3)"],
+        [/Pilih pejantan dari garis keturunan lain\./g, "Choose a ram from another bloodline."],
         [/jumlah mati melebihi jumlah lahir/g, "more lambs dead than born"],
         [/BCS harus antara 1 dan 5/g, "BCS must be between 1 and 5"],
         [/fungsi (\S+) tidak dikenal/g, "unknown function $1"],
@@ -898,7 +904,7 @@
           });
           const j = await r.json();
           if (!r.ok) throw new Error(j.detail || r.statusText);
-          turn.querySelector(".agent").textContent = j.reply;
+          turn.querySelector(".agent").textContent = (j.reply || "").replace(/\*\*(.+?)\*\*/g, "$1");
           const calls = turn.querySelector(".calls");
           for (const c of j.calls) {
             const el = document.createElement("span");

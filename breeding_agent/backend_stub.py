@@ -109,6 +109,25 @@ class Backend:
         return {"ok": True, "event": ev, "status": a["status"], "peringatan": warnings,
                 "kalender": {"perkiraan_birahi_berikutnya": _iso(dt + timedelta(days=SIKLUS_BIRAHI))}}
 
+    def kerabat_dekat(self, betina, jantan):
+        """Reason string if the pair is closely related (parent-offspring, grandparent,
+        shared parent), else None. Uses dam/sire recorded on each animal."""
+        def parents(tag):
+            x = self.animals.get(tag) or {}
+            return {p for p in (x.get("dam"), x.get("sire")) if p}
+        pb, pj = parents(betina), parents(jantan)
+        if jantan in pb:
+            return f"{jantan} adalah ayah dari {betina}"
+        if betina in pj:
+            return f"{betina} adalah induk dari {jantan}"
+        grandparents = set().union(*(parents(x) for x in pb)) if pb else set()
+        if jantan in grandparents:
+            return f"{jantan} adalah kakek dari {betina}"
+        shared = pb & pj
+        if shared:
+            return f"{betina} dan {jantan} punya tetua yang sama ({', '.join(sorted(shared))})"
+        return None
+
     def catat_kawin(self, ear_tag, pejantan, waktu, metode="alam", waktu_perkiraan=False, cara_diketahui=None, catatan=""):
         a, err = self._female(ear_tag)
         if err:
@@ -124,6 +143,10 @@ class Backend:
             return {"ok": False, "error": err}
         if a.get("larangan_kawin"):
             return {"ok": False, "error": f"{ear_tag} sedang dilarang kawin: {a['larangan_kawin']}"}
+        if metode == "alam":
+            reason = self.kerabat_dekat(ear_tag, pejantan)
+            if reason:
+                return {"ok": False, "error": f"kawin sedarah ditolak: {reason}. Pilih pejantan dari garis keturunan lain."}
         warnings = []
         if a["status"] == "bunting":
             warnings.append("status tercatat bunting; kawin pada induk bunting perlu dikonfirmasi")

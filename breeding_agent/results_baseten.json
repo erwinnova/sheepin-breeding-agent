@@ -1,8 +1,8 @@
 {
   "provider": "baseten",
   "now": "2026-10-29T18:00:00",
-  "passed": 12,
-  "total": 12,
+  "passed": 15,
+  "total": 15,
   "results": [
     {
       "id": 1,
@@ -53,14 +53,14 @@
           "args": {
             "ear_tag": "0266",
             "pejantan": "0931",
+            "metode": "alam",
             "waktu": "2026-10-29T07:00:00",
-            "waktu_perkiraan": false,
-            "metode": "alam"
+            "waktu_perkiraan": false
           },
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "kawin",
               "ear_tag": "0266",
               "waktu": "2026-10-29T07:00:00",
@@ -84,12 +84,12 @@
           }
         }
       ],
-      "reply": "Tercatat: 0266 dikawinkan dengan 0931 pada 29 Okt 2026 jam 07:00.\n\nKalender: cek birahi ulang 15-19 Nov 2026, USG 28 Des 2026, perkiraan beranak 25 Mar 2027.",
-      "seconds": 5.4,
+      "reply": "Tercatat: 0266 dikawinkan dengan 0931 pada 29 Okt 2026 jam 07:00.\nJendela cek birahi ulang: 15-19 Nov 2026, jadwal USG: 28 Des 2026, perkiraan beranak: 25 Mar 2027.",
+      "seconds": 5.1,
       "usage": {
-        "prompt": 9583,
-        "completion": 822,
-        "reasoning": 444
+        "prompt": 10921,
+        "completion": 851,
+        "reasoning": 472
       }
     },
     {
@@ -126,12 +126,13 @@
             "tanda": [
               "abang",
               "jingkrak_jingkrak"
-            ]
+            ],
+            "catatan": "vulva merah dan gelisah terus"
           },
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "birahi",
               "ear_tag": "0582",
               "waktu": "2026-10-29T18:00:00",
@@ -142,7 +143,7 @@
                 "jingkrak_jingkrak"
               ],
               "ada_pejantan": null,
-              "catatan": ""
+              "catatan": "vulva merah dan gelisah terus"
             },
             "status": "kosong",
             "peringatan": [],
@@ -152,12 +153,12 @@
           }
         }
       ],
-      "reply": "Tercatat: 0582 birahi pada 29 Okt 2026 jam 18:00 (vulva merah, gelisah). Perkiraan birahi berikutnya: 15 Nov 2026.",
-      "seconds": 6.6,
+      "reply": "0582 tercatat birahi pada 29 Okt 2026 jam 18:00 (vulva merah, gelisah). Perkiraan birahi berikutnya 15 Nov 2026.",
+      "seconds": 8.6,
       "usage": {
-        "prompt": 9269,
-        "completion": 1298,
-        "reasoning": 1016
+        "prompt": 10639,
+        "completion": 1559,
+        "reasoning": 1259
       }
     },
     {
@@ -197,7 +198,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "beranak",
               "ear_tag": "0744",
               "waktu": "2026-10-28T21:00:00",
@@ -237,12 +238,12 @@
           }
         }
       ],
-      "reply": "Tercatat: 0744 beranak 28 Okt 2026 21:00 (semalam, perkiraan) — lahir 2, mati 1, hidup 1 (L9001). Status induk: menyusui. Jendela sapih: 27 Des 2026 – 26 Jan 2027.",
-      "seconds": 5.6,
+      "reply": "Tercatat 0744 beranak 2 ekor pada 28 Okt 2026 21:00 (semalam, waktu perkiraan), 1 mati, 1 hidup (L9001).\nJadwal sapih: 27 Des 2026 - 26 Jan 2027.",
+      "seconds": 5.5,
       "usage": {
-        "prompt": 9367,
-        "completion": 1013,
-        "reasoning": 696
+        "prompt": 10705,
+        "completion": 1097,
+        "reasoning": 782
       }
     },
     {
@@ -271,12 +272,12 @@
           }
         }
       ],
-      "reply": "0744 tercatat betina bunting. Beranak semalam jam berapa dan berapa ekor yang lahir? Semua hidup atau ada yang mati?",
-      "seconds": 3.0,
+      "reply": "0744 tercatat beranak semalam (28 Okt 21:00). Berapa ekor yang lahir dan berapa yang mati? Semua hidup atau ada yang mati?",
+      "seconds": 2.9,
       "usage": {
-        "prompt": 5913,
-        "completion": 362,
-        "reasoning": 242
+        "prompt": 6805,
+        "completion": 461,
+        "reasoning": 340
       }
     },
     {
@@ -305,12 +306,12 @@
           }
         }
       ],
-      "reply": "0266 dikawinkan tadi sore dicatat. Dengan pejantan ear tag berapa?",
-      "seconds": 2.4,
+      "reply": "0266 dikawinkan tadi sore jam 16:00 — dengan pejantan nomor berapa?",
+      "seconds": 2.6,
       "usage": {
-        "prompt": 5915,
-        "completion": 308,
-        "reasoning": 199
+        "prompt": 6807,
+        "completion": 312,
+        "reasoning": 201
       }
     },
     {
@@ -342,25 +343,24 @@
           "name": "catat_cek_bunting",
           "args": {
             "ear_tag": "0417",
-            "waktu": "2026-10-29T16:00:00",
+            "waktu": "2026-10-29T12:00:00",
             "metode": "usg",
             "hasil": "bunting",
-            "jumlah_janin": 2,
-            "catatan": "Vet scanned this afternoon"
+            "jumlah_janin": 2
           },
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "cek_bunting",
               "ear_tag": "0417",
-              "waktu": "2026-10-29T16:00:00",
+              "waktu": "2026-10-29T12:00:00",
               "dicatat": "2026-10-29T18:00:00",
               "metode": "usg",
               "hasil": "bunting",
               "jumlah_janin": 2,
               "pemeriksa": null,
-              "catatan": "Vet scanned this afternoon"
+              "catatan": ""
             },
             "status": "bunting",
             "peringatan": [],
@@ -370,12 +370,12 @@
           }
         }
       ],
-      "reply": "0417: pregnancy check recorded 29 Oct 2026 16:00 (USG) — pregnant with twins. Expected lambing ~14 Feb 2027.",
+      "reply": "0417 pregnancy check recorded: pregnant with twins on 29 Oct 2026 12:00 (this afternoon) via USG. Expected lambing around 14 Feb 2027.",
       "seconds": 6.0,
       "usage": {
-        "prompt": 9277,
-        "completion": 1173,
-        "reasoning": 871
+        "prompt": 10591,
+        "completion": 1276,
+        "reasoning": 984
       }
     },
     {
@@ -472,7 +472,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "kawin",
               "ear_tag": "0266",
               "waktu": "2026-10-29T07:00:00",
@@ -505,7 +505,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 2,
+              "id": 12,
               "jenis": "birahi",
               "ear_tag": "0582",
               "waktu": "2026-10-29T12:00:00",
@@ -534,7 +534,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 3,
+              "id": 13,
               "jenis": "beranak",
               "ear_tag": "0744",
               "waktu": "2026-10-28T21:00:00",
@@ -574,12 +574,12 @@
           }
         }
       ],
-      "reply": "Tercatat 3 kejadian:\n\n• **0266** dikawinkan dengan **0931** pada 29 Okt 2026 jam 07:00 (perkiraan). Cek birahi ulang: 15-19 Nov 2026, USG: 28 Des 2026, perkiraan beranak: 25 Mar 2027.\n• **0582** birahi pada 29 Okt 2026 jam 12:00 (perkiraan). Perkiraan birahi berikutnya: 15 Nov 2026 jam 12:00.\n• **0744** beranak pada 28 Okt 2026 jam 21:00 (perkiraan) — lahir 2, mati 1, hidup 1 (L9001). Jendela sapih: 27 Des 2026 - 26 Jan 2027.",
-      "seconds": 10.1,
+      "reply": "0266 dikawinkan dengan 0931 tercatat 29 Okt 2026 07:00 (perkiraan). Cek birahi ulang 15-19 Nov 2026, USG 28 Des 2026, perkiraan beranak 25 Mar 2027.\n0582 birahi tercatat 29 Okt 2026 12:00 (perkiraan). Perkiraan birahi berikutnya 15 Nov 2026.\n0744 beranak tercatat 28 Okt 2026 21:00 (perkiraan), jumlah lahir 2, mati 1, anak hidup L9001. Sapih sekitar 27 Des 2026 - 26 Jan 2027.",
+      "seconds": 7.4,
       "usage": {
-        "prompt": 18748,
-        "completion": 2409,
-        "reasoning": 1547
+        "prompt": 12206,
+        "completion": 1887,
+        "reasoning": 1090
       }
     },
     {
@@ -627,12 +627,12 @@
           }
         }
       ],
-      "reply": "Catatan: 0931 tercatat sebagai **jantan** (pejantan Garut) dan 0266 tercatat sebagai **betina**.\n\nApakah maksudnya **0266 (betina) dikawinkan dengan 0931 (jantan) tadi pagi**? Kalau benar, saya akan catat seperti itu.",
-      "seconds": 3.8,
+      "reply": "0931 tercatat sebagai jantan dan 0266 sebagai betina. Apakah maksudnya betina 0266 dikawinkan dengan pejantan 0931 tadi pagi?",
+      "seconds": 4.1,
       "usage": {
-        "prompt": 6061,
-        "completion": 702,
-        "reasoning": 488
+        "prompt": 6953,
+        "completion": 742,
+        "reasoning": 559
       }
     },
     {
@@ -670,7 +670,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "bcs",
               "ear_tag": "0417",
               "waktu": "2026-10-29T18:00:00",
@@ -686,11 +686,11 @@
         }
       ],
       "reply": "Tercatat BCS 0417 skor 2,5 pada 29 Okt 2026 18:00.",
-      "seconds": 4.8,
+      "seconds": 4.9,
       "usage": {
-        "prompt": 9177,
-        "completion": 645,
-        "reasoning": 407
+        "prompt": 10515,
+        "completion": 865,
+        "reasoning": 648
       }
     },
     {
@@ -710,12 +710,12 @@
           }
         }
       ],
-      "reply": "Ear tag 0999 tidak ditemukan di data kandang. Bisa konfirmasi nomornya benar 0999?\n\nUntuk beranak tiga tadi pagi (29 Okt 2026 jam 07:00) — apakah ketiga anaknya hidup semua, atau ada yang mati? Dan apakah beranaknya dibantu atau lancar tanpa bantuan?",
-      "seconds": 3.9,
+      "reply": "Ear tag 0999 tidak ditemukan di data kandang. Bisa tolong konfirmasi nomor ear tag induknya?\n\nUntuk beranak tiga tadi pagi (29 Okt 2026 jam 07:00), apakah semua anak hidup atau ada yang mati?",
+      "seconds": 2.9,
       "usage": {
-        "prompt": 5868,
-        "completion": 695,
-        "reasoning": 539
+        "prompt": 6760,
+        "completion": 414,
+        "reasoning": 273
       }
     },
     {
@@ -724,12 +724,12 @@
       "pass": true,
       "problems": [],
       "calls": [],
-      "reply": " I understand you want feeding advice for 0266, but I only record breeding events like heat, mating, pregnancy checks, lambing, and weaning — I don't give health or feeding advice.\n\nIf 0266 has lambed, I can record it for you — just let me know when she lambed and how many lambs were born.",
-      "seconds": 2.7,
+      "reply": " I only handle breeding records and schedules, so I can't advise on feeding.",
+      "seconds": 3.7,
       "usage": {
-        "prompt": 2893,
-        "completion": 471,
-        "reasoning": 390
+        "prompt": 3339,
+        "completion": 446,
+        "reasoning": 421
       }
     },
     {
@@ -786,7 +786,7 @@
           "result": {
             "ok": true,
             "event": {
-              "id": 1,
+              "id": 11,
               "jenis": "birahi",
               "ear_tag": "0266",
               "waktu": "2026-10-28T08:00:00",
@@ -808,14 +808,14 @@
           "args": {
             "ear_tag": "0266",
             "pejantan": "0931",
-            "metode": "alam",
             "waktu": "2026-10-29T09:00:00",
-            "waktu_perkiraan": false
+            "waktu_perkiraan": false,
+            "metode": "alam"
           },
           "result": {
             "ok": true,
             "event": {
-              "id": 2,
+              "id": 12,
               "jenis": "kawin",
               "ear_tag": "0266",
               "waktu": "2026-10-29T09:00:00",
@@ -839,12 +839,202 @@
           }
         }
       ],
-      "reply": "Tercatat:\n- 0266 birahi kemarin 28 Okt 2026 jam 08:00 (perkiraan). Perkiraan birahi berikutnya 14 Nov 2026.\n- 0266 kawin dengan 0931 hari ini 29 Okt 2026 jam 09:00. Cek birahi ulang 15 & 19 Nov, USG 28 Des 2026, perkiraan beranak 25 Mar 2027.",
-      "seconds": 7.2,
+      "reply": "Tercatat:\n0266 birahi kemarin 28 Okt 2026 jam 08:00 (perkiraan).\n\n0266 kawin dengan 0931 hari ini 29 Okt 2026 jam 09:00.\nJadwal: cek birahi ulang 15-19 Nov 2026, USG 28 Des 2026, perkiraan beranak 25 Mar 2027.",
+      "seconds": 7.0,
       "usage": {
-        "prompt": 13286,
-        "completion": 1170,
-        "reasoning": 629
+        "prompt": 15070,
+        "completion": 1282,
+        "reasoning": 755
+      }
+    },
+    {
+      "id": 13,
+      "input": "siapa yang perlu dicek hari ini?",
+      "pass": true,
+      "problems": [],
+      "calls": [
+        {
+          "name": "ringkasan_hari_ini",
+          "args": {
+            "hari_ke_depan": 7
+          },
+          "result": {
+            "ok": true,
+            "hari_ini": "2026-10-29",
+            "sampai": "2026-11-05",
+            "jumlah": 3,
+            "ringkasan": {
+              "perkiraan beranak sudah lewat": 1,
+              "perkiraan birahi": 1,
+              "belum ada birahi tercatat": 1
+            },
+            "daftar": [
+              {
+                "ear_tag": "0744",
+                "apa": "perkiraan beranak sudah lewat",
+                "kapan": "2026-10-27",
+                "detail": "2 hari lewat; periksa"
+              },
+              {
+                "ear_tag": "0582",
+                "apa": "perkiraan birahi",
+                "kapan": "2026-10-27 - 2026-10-31",
+                "detail": "keyakinan sedang; siapkan pejantan"
+              },
+              {
+                "ear_tag": "0266",
+                "apa": "belum ada birahi tercatat",
+                "kapan": "2026-10-29",
+                "detail": "amati dengan pejantan pengusik"
+              }
+            ]
+          }
+        }
+      ],
+      "reply": "Hari ini 29 Okt 2026, yang perlu dicek:\n\n0744 - perkiraan beranak sudah lewat 27 Okt (2 hari lewat) - periksa\n0582 - perkiraan birahi 27 Okt - 31 Okt, keyakinan sedang - siapkan pejantan\n0266 - belum ada birahi tercatat - amati dengan pejantan pengusik",
+      "seconds": 3.2,
+      "usage": {
+        "prompt": 6975,
+        "completion": 644,
+        "reasoning": 470
+      }
+    },
+    {
+      "id": 14,
+      "input": "Is 0417 pregnant? And when is 0744 due?",
+      "pass": true,
+      "problems": [],
+      "calls": [
+        {
+          "name": "prediksi_induk",
+          "args": {
+            "ear_tag": "0417"
+          },
+          "result": {
+            "ok": true,
+            "ear_tag": "0417",
+            "status": "dikawinkan",
+            "larangan_kawin": null,
+            "hari_ini": "2026-10-29",
+            "perkiraan_beranak": "2027-02-14",
+            "hari_bunting": 39,
+            "usg": "2026-11-19",
+            "kebuntingan": {
+              "kemungkinan": 0.92,
+              "dasar": "tidak kembali birahi 39 hari setelah kawin; pastikan dengan USG"
+            },
+            "siklus": {
+              "siklus_hari": 17.0,
+              "n": 1,
+              "sd": null
+            },
+            "birahi_berikutnya": {
+              "mulai": "2026-11-08",
+              "sampai": "2026-11-12",
+              "keyakinan": "sedang",
+              "dasar": "1 siklus tercatat, rata-rata 17.0 hari",
+              "catatan": "hanya terjadi bila kawin gagal; kalau muncul, catat sebagai birahi"
+            }
+          }
+        },
+        {
+          "name": "prediksi_induk",
+          "args": {
+            "ear_tag": "0744"
+          },
+          "result": {
+            "ok": true,
+            "ear_tag": "0744",
+            "status": "bunting",
+            "larangan_kawin": null,
+            "hari_ini": "2026-10-29",
+            "perkiraan_beranak": "2026-10-27",
+            "hari_bunting": 149,
+            "kebuntingan": {
+              "kemungkinan": 0.98,
+              "dasar": "USG positif"
+            },
+            "siklus": {
+              "siklus_hari": 17,
+              "n": 0,
+              "sd": null
+            }
+          }
+        }
+      ],
+      "reply": "0417: Mated status, 39 days since mating. Pregnancy likelihood 0.92 based on no return to heat for 39 days - confirm with USG. USG due 2026-11-19. Expected lambing 2027-02-14 if pregnant.\n\n0744: Confirmed pregnant (bunting) with USG positive, likelihood 0.98, 149 days pregnant. Expected lambing 2026-10-27.",
+      "seconds": 5.3,
+      "usage": {
+        "prompt": 7163,
+        "completion": 1283,
+        "reasoning": 1042
+      }
+    },
+    {
+      "id": 15,
+      "input": "0582 dikawinkan dengan 0931 tadi pagi jam 7",
+      "pass": true,
+      "problems": [],
+      "calls": [
+        {
+          "name": "cari_ternak",
+          "args": {
+            "ear_tag": "0582"
+          },
+          "result": {
+            "ditemukan": 1,
+            "ternak": [
+              {
+                "ear_tag": "0582",
+                "jenis_kelamin": "betina",
+                "ras": "ekor_tipis",
+                "umur_bulan": 18,
+                "status": "kosong",
+                "larangan_kawin": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "cari_ternak",
+          "args": {
+            "ear_tag": "0931"
+          },
+          "result": {
+            "ditemukan": 1,
+            "ternak": [
+              {
+                "ear_tag": "0931",
+                "jenis_kelamin": "jantan",
+                "ras": "garut",
+                "umur_bulan": 42,
+                "status": "pejantan",
+                "larangan_kawin": null
+              }
+            ]
+          }
+        },
+        {
+          "name": "catat_kawin",
+          "args": {
+            "ear_tag": "0582",
+            "pejantan": "0931",
+            "metode": "alam",
+            "waktu": "2026-10-29T07:00:00",
+            "waktu_perkiraan": false
+          },
+          "result": {
+            "ok": false,
+            "error": "kawin sedarah ditolak: 0931 adalah ayah dari 0582. Pilih pejantan dari garis keturunan lain."
+          }
+        }
+      ],
+      "reply": "Kawin 0582 dengan 0931 ditolak sistem: 0931 adalah ayah dari 0582 (kawin sedarah).\n\n0582 betina 18 bulan status kosong, 0931 jantan Garut sudah terkonfirmasi ada.\n\nMau ganti pejantan lain untuk 0582 tadi pagi jam 7? Sebutkan ear tag pejantan penggantinya.",
+      "seconds": 4.5,
+      "usage": {
+        "prompt": 10767,
+        "completion": 741,
+        "reasoning": 346
       }
     }
   ]

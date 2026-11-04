@@ -207,7 +207,7 @@
     <div class="wrap">
       <h1>Sheepin Breeding Agent, test results</h1>
       <p class="lead">
-        The same agent, the same 12 farmer notes (in Bahasa Indonesia, with
+        The same agent, the same <span id="ncases">15</span> farmer notes (in Bahasa Indonesia, with
         English below; the agent replies in the farmer’s language), run against
         each model. A case passes when the agent makes exactly the expected
         record calls with the stated arguments, the backend accepts them, and
@@ -247,6 +247,7 @@
         "larang_kawin",
       ]);
       function expectation(c) {
+        if (c.expect_refused) return "must refuse: inbreeding";
         if (c.expect_question) return "must ask, not record";
         const read = (c.expect_calls || []).filter(
           (e) => e.name === "ringkasan_hari_ini" || e.name === "prediksi_induk",
@@ -272,6 +273,7 @@
       async function load() {
         const meta = await (await fetch("/api/results")).json();
         const cases = meta.cases;
+        document.getElementById("ncases").textContent = cases.length;
         const runs = meta.runs; // [{provider, model, now, passed, total, results:[...]}]
         const cards = document.getElementById("cards");
         if (!runs.length) {
@@ -320,7 +322,7 @@
                 : `<span class="calls">${(x.problems || []).join("; ")}</span>`;
               return `<td><span class="${x.pass ? "pass" : "fail"}">${x.pass ? "pass" : "fail"}</span> <span class="calls">${x.seconds} s</span>
         <span class="calls">${rec.length ? rec.join(", ") : "no record call"}</span>${problems}
-        <span class="reply">${(x.reply || "").slice(0, 220)}</span></td>`;
+        <span class="reply">${(x.reply || "").replace(/\*\*(.+?)\*\*/g, "$1").slice(0, 220)}</span></td>`;
             })
             .join("");
           const note = c.input_en

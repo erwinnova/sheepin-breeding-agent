@@ -28,6 +28,18 @@ def check(case, calls, reply):
     exp = case.get("expect_calls", [])
     exp_record = [e for e in exp if e["name"] in RECORD]
     got_record = [c for c in calls if c["name"] in RECORD]
+    if case.get("expect_refused"):
+        # pass when nothing was saved and the farmer is told why: either the backend rejected
+        # the record call, or the agent spotted the relationship itself and did not call it
+        if any(c["result"].get("ok", False) for c in got_record):
+            problems.append("harusnya ditolak, tetapi tersimpan")
+        rejected = any(not c["result"].get("ok", False) for c in got_record)
+        explained = any(w in reply.lower() for w in ("sedarah", "ayah", "kerabat", "inbreed", "sire", "father", "related"))
+        if not (rejected or explained):
+            problems.append("tidak menjelaskan alasan penolakan")
+        if "cari_ternak" not in names:
+            problems.append("tidak memanggil cari_ternak")
+        return problems
     if any(e["name"] == "cari_ternak" for e in exp) and "cari_ternak" not in names:
         problems.append("tidak memanggil cari_ternak")
     if sorted(e["name"] for e in exp_record) != sorted(c["name"] for c in got_record):
