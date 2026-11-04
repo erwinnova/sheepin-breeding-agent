@@ -1,7 +1,110 @@
 [
-  {"ear_tag": "0266", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 26, "status": "kosong", "dam": "0102", "sire": "0931"},
-  {"ear_tag": "0582", "jenis_kelamin": "betina", "ras": "ekor_tipis", "umur_bulan": 18, "status": "kosong", "dam": null, "sire": null},
-  {"ear_tag": "0744", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 38, "status": "bunting", "kawin_terakhir": {"pejantan": "0931", "waktu": "2026-06-02T07:00:00"}, "dam": "0088", "sire": "0501"},
-  {"ear_tag": "0417", "jenis_kelamin": "betina", "ras": "garut", "umur_bulan": 30, "status": "dikawinkan", "kawin_terakhir": {"pejantan": "0931", "waktu": "2026-09-20T07:00:00"}, "dam": null, "sire": null},
-  {"ear_tag": "0931", "jenis_kelamin": "jantan", "ras": "garut", "umur_bulan": 42, "status": "pejantan", "dam": null, "sire": null}
+  {
+    "ear_tag": "0266",
+    "jenis_kelamin": "betina",
+    "ras": "garut",
+    "umur_bulan": 26,
+    "status": "kosong",
+    "dam": "0102",
+    "sire": "0931",
+    "riwayat": [
+      {
+        "jenis": "kawin",
+        "waktu": "2025-11-05T07:00:00",
+        "pejantan": "0931"
+      },
+      {
+        "jenis": "beranak",
+        "waktu": "2026-04-01T05:00:00",
+        "jumlah_lahir": 2,
+        "jumlah_mati": 0
+      },
+      {
+        "jenis": "sapih",
+        "waktu": "2026-06-10T08:00:00"
+      }
+    ]
+  },
+  {
+    "ear_tag": "0582",
+    "jenis_kelamin": "betina",
+    "ras": "ekor_tipis",
+    "umur_bulan": 18,
+    "status": "kosong",
+    "dam": null,
+    "sire": null,
+    "riwayat": [
+      {
+        "jenis": "birahi",
+        "waktu": "2026-09-25T07:00:00"
+      },
+      {
+        "jenis": "birahi",
+        "waktu": "2026-10-12T07:00:00"
+      }
+    ]
+  },
+  {
+    "ear_tag": "0744",
+    "jenis_kelamin": "betina",
+    "ras": "garut",
+    "umur_bulan": 38,
+    "status": "bunting",
+    "kawin_terakhir": {
+      "pejantan": "0931",
+      "waktu": "2026-06-02T07:00:00"
+    },
+    "dam": "0088",
+    "sire": "0501",
+    "riwayat": [
+      {
+        "jenis": "kawin",
+        "waktu": "2026-06-02T07:00:00",
+        "pejantan": "0931"
+      },
+      {
+        "jenis": "cek_bunting",
+        "waktu": "2026-08-01T10:00:00",
+        "metode": "usg",
+        "hasil": "bunting"
+      }
+    ]
+  },
+  {
+    "ear_tag": "0417",
+    "jenis_kelamin": "betina",
+    "ras": "garut",
+    "umur_bulan": 30,
+    "status": "dikawinkan",
+    "kawin_terakhir": {
+      "pejantan": "0931",
+      "waktu": "2026-09-20T07:00:00"
+    },
+    "dam": null,
+    "sire": null,
+    "riwayat": [
+      {
+        "jenis": "birahi",
+        "waktu": "2026-09-03T07:00:00"
+      },
+      {
+        "jenis": "birahi",
+        "waktu": "2026-09-20T06:00:00"
+      },
+      {
+        "jenis": "kawin",
+        "waktu": "2026-09-20T07:00:00",
+        "pejantan": "0931"
+      }
+    ]
+  },
+  {
+    "ear_tag": "0931",
+    "jenis_kelamin": "jantan",
+    "ras": "garut",
+    "umur_bulan": 42,
+    "status": "pejantan",
+    "dam": null,
+    "sire": null
+  }
 ]

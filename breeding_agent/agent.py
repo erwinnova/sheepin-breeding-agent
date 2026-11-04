@@ -1,16 +1,35 @@
 """
 Sheepin Breeding Agent: tool-calling loop over an OpenAI-compatible chat API.
+
+Providers (select with env PROVIDER):
+  baseten  -> Muse Spark Open (open weights) via https://inference.baseten.co/v1
+  meta     -> Muse Spark via the Meta Model API (set META_BASE_URL / META_MODEL
+              from the hackathon docs; the API is assumed OpenAI-compatible)
+
+Env:
+  PROVIDER=baseten|meta
+  BASETEN_API_KEY, META_API_KEY
+  META_BASE_URL, META_MODEL          (fill from docs)
+  AGENT_NOW=2026-10-29T10:00:00      (optional fixed clock for tests)
+  AGENT_TZ=Asia/Jakarta
+
+Usage:
+  python agent.py                     # interactive REPL
+  python agent.py "0266 dikawinkan dengan 0931 tadi pagi jam 7"
 """
 
 import json
 import os
 import sys
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # run from any directory
+import envfile
+envfile.load_env()
 
 from openai import OpenAI
 
@@ -49,9 +68,9 @@ class Agent:
         self.client = OpenAI(base_url=cfg["base_url"], api_key=os.environ[cfg["key_env"]])
         self.model = cfg["model"]
         self.provider = provider
-        self.now = now or (datetime.fromisoformat(os.environ["AGENT_NOW"]) if os.environ.get("AGENT_NOW") else datetime.now())
         self.tz = tz or os.environ.get("AGENT_TZ", "Asia/Jakarta")
-        self.backend = backend or Backend(now=self.now)
+        self._fixed_now = now or (datetime.fromisoformat(os.environ["AGENT_NOW"]) if os.environ.get("AGENT_NOW") else None)
+        self.backend = backend or Backend(now=self._fixed_now, tz=self.tz)
         self.tools = load_tools()
         self.messages = [{"role": "system", "content": load_prompt(self.now, self.tz)}]
         self.calls = []          # every tool call made, for tests and the comparison page
@@ -67,8 +86,13 @@ class Agent:
                                  for c in msg.tool_calls]
         return out
 
+    @property
+    def now(self):
+        return self._fixed_now or datetime.now(ZoneInfo(self.tz)).replace(tzinfo=None, microsecond=0)
+
     def send(self, text):
         """One user turn. Returns the agent's final text; tool calls are logged in self.calls."""
+        self.messages[0] = {"role": "system", "content": load_prompt(self.now, self.tz)}  # keep the clock current
         self.messages.append({"role": "user", "content": text})
         for _ in range(MAX_ROUNDS):
             r = self.client.chat.completions.create(

@@ -249,6 +249,9 @@
         color: var(--ink);
         font-weight: 700;
       }
+      html[lang="en"] .turn .you::before {
+        content: "Farmer: ";
+      }
       .turn .agent {
         margin: 0;
         white-space: pre-wrap;
@@ -375,6 +378,51 @@
         gap: 1rem;
         flex-wrap: wrap;
       }
+      .today {
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0.8rem;
+      }
+      .today ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .today li {
+        display: grid;
+        grid-template-columns: 4.2rem 1fr;
+        gap: 0.5rem;
+        align-items: baseline;
+      }
+      .today .tag {
+        font-weight: 700;
+      }
+      .today .when {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .today .urgent .what {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .pred {
+        background: var(--green-soft);
+        border-radius: 10px;
+        padding: 0.6rem 0.8rem;
+        margin: 0.4rem 0 0.8rem;
+        font-size: 0.95rem;
+      }
+      .pred .lbl {
+        color: var(--muted);
+        font-size: 0.85rem;
+        display: block;
+      }
+      .pred p {
+        margin: 0.15rem 0;
+      }
       .notice {
         background: var(--amber-soft);
         color: var(--ink);
@@ -464,6 +512,10 @@
       </section>
 
       <section aria-labelledby="h-kawanan">
+        <div class="today">
+          <h2 data-i18n="today">Hari ini</h2>
+          <ul id="today"></ul>
+        </div>
         <h2 id="h-kawanan" data-i18n="herd">Kawanan</h2>
         <table>
           <thead>
@@ -477,6 +529,7 @@
         </table>
         <div class="detail" id="detail" hidden>
           <h3 id="d-title"></h3>
+          <div class="pred" id="d-pred"></div>
           <div id="d-calendar"></div>
           <h3 data-i18n="pedigree">Silsilah</h3>
           <div class="tree" id="d-tree"></div>
@@ -526,6 +579,13 @@
           offspring: "Anak",
           unknown: "tidak diketahui",
           notInHerd: "tidak ada di kawanan",
+          today: "Hari ini",
+          nothingToday: "Tidak ada yang perlu dicek 7 hari ke depan.",
+          pregnancy: "Kemungkinan bunting",
+          nextHeat: "Perkiraan birahi berikutnya",
+          due: "Perkiraan beranak",
+          confidence: "keyakinan",
+          cycle: "Siklus",
           noNext: "tidak ada jadwal",
           st: {
             kosong: "kosong",
@@ -536,6 +596,7 @@
             anak: "anak",
             pejantan: "pejantan",
           },
+          act: {},
         },
         en: {
           tagline:
@@ -563,6 +624,13 @@
           offspring: "Offspring",
           unknown: "unknown",
           notInHerd: "not in herd",
+          today: "Today",
+          nothingToday: "Nothing to check in the next 7 days.",
+          pregnancy: "Pregnancy likelihood",
+          nextHeat: "Predicted next heat",
+          due: "Expected lambing",
+          confidence: "confidence",
+          cycle: "Cycle",
           noNext: "nothing scheduled",
           st: {
             kosong: "open",
@@ -573,10 +641,106 @@
             anak: "lamb",
             pejantan: "ram",
           },
+          act: {
+            "perkiraan beranak sudah lewat": "lambing overdue",
+            "cek birahi ulang": "re-check for heat",
+            "mendekati beranak": "lambing soon",
+            "perkiraan birahi": "heat expected",
+            "jadwal USG": "ultrasound due",
+            "jendela sapih": "weaning window",
+            "larangan kawin aktif": "breeding ban active",
+            "belum ada birahi tercatat": "no heat recorded yet",
+          },
         },
       };
       let lang = localStorage.getItem("sheepin.lang") || "id";
       const t = (k) => T[lang][k];
+      // Backend messages are written in Indonesian; in EN mode translate the known phrases.
+      const CONF_EN = { tinggi: "high", sedang: "medium", rendah: "low" };
+      const RULES_EN = [
+        [
+          /sedang dalam jendela cek birahi ulang/g,
+          "inside the return-to-heat check window",
+        ],
+        [
+          /tidak kembali birahi (\d+) hari setelah kawin/g,
+          "no return to heat $1 days after mating",
+        ],
+        [/pastikan dengan USG/g, "confirm by ultrasound"],
+        [
+          /kembali birahi belum bisa dinilai/g,
+          "return to heat cannot be judged yet",
+        ],
+        [/hari ke-(\d+) setelah kawin/g, "day $1 after mating"],
+        [/hari ke-(\d+)/g, "day $1"],
+        [/(\d+) hari lewat; periksa/g, "$1 days overdue; check her"],
+        [/(\d+) hari lagi/g, "in $1 days"],
+        [
+          /keyakinan (tinggi|sedang|rendah)/g,
+          (_, c) => `${CONF_EN[c]} confidence`,
+        ],
+        [/siapkan pejantan/g, "have the ram ready"],
+        [/amati dengan pejantan pengusik/g, "watch with a teaser ram"],
+        [/belum ada birahi tercatat/g, "no heat recorded yet"],
+        [/tidak ada kawin tercatat/g, "no mating recorded"],
+        [/USG positif/g, "positive ultrasound"],
+        [/sedang menyusui/g, "nursing"],
+        [
+          /(\d+) siklus tercatat, rata-rata ([\d.]+) hari/g,
+          "$1 cycles recorded, average $2 days",
+        ],
+        [/siklus standar 17 hari/g, "standard 17-day cycle"],
+        [/^cek birahi ulang$/, "re-check for heat"],
+        [/^USG kebuntingan$/, "pregnancy ultrasound"],
+        [/^perkiraan beranak$/, "expected lambing"],
+        [/^sapih$/, "weaning"],
+        [
+          /waktu '(.+?)' bukan format ISO 8601 \(contoh ([^)]+)\)/g,
+          "time '$1' is not ISO 8601 (e.g. $2)",
+        ],
+        [
+          /waktu (\S+) berada di masa depan \(sekarang (\S+)\)/g,
+          "time $1 is in the future (now $2)",
+        ],
+        [/pejantan (\S+) tidak ada di kawanan/g, "ram $1 is not in the herd"],
+        [
+          /ear tag (\S+) tidak ada di kawanan/g,
+          "ear tag $1 is not in the herd",
+        ],
+        [/(\S+) adalah betina, bukan pejantan/g, "$1 is a ewe, not a ram"],
+        [/(\S+) adalah jantan, bukan betina/g, "$1 is a ram, not a ewe"],
+        [/(\S+) adalah (\S+), bukan betina/g, "$1 is not a ewe"],
+        [/(\S+) sedang dilarang kawin: /g, "$1 is under a breeding ban: "],
+        [/jumlah mati melebihi jumlah lahir/g, "more lambs dead than born"],
+        [/BCS harus antara 1 dan 5/g, "BCS must be between 1 and 5"],
+        [/fungsi (\S+) tidak dikenal/g, "unknown function $1"],
+        [/argumen tidak sesuai: /g, "invalid arguments: "],
+      ];
+      const tx = (s) => {
+        // named tx: "tr" is used for table rows below
+        if (s == null) return "";
+        if (lang !== "en") return String(s);
+        return RULES_EN.reduce(
+          (out, [re, rep]) => out.replace(re, rep),
+          String(s),
+        );
+      };
+      const conf = (c) => (lang === "en" ? CONF_EN[c] || c : c);
+      const TOOL = {
+        cari_ternak: ["cari", "look up"],
+        catat_birahi: ["birahi", "heat"],
+        catat_kawin: ["kawin", "mating"],
+        catat_cek_bunting: ["cek bunting", "pregnancy check"],
+        catat_beranak: ["beranak", "lambing"],
+        catat_keguguran: ["keguguran", "abortion"],
+        catat_sapih: ["sapih", "weaning"],
+        catat_bcs: ["BCS", "BCS"],
+        larang_kawin: ["larang kawin", "breeding ban"],
+        ringkasan_hari_ini: ["ringkasan hari ini", "today's summary"],
+        prediksi_induk: ["prediksi", "prediction"],
+      };
+      const toolLabel = (name) =>
+        TOOL[name] ? TOOL[name][lang === "en" ? 1 : 0] : name;
       function applyLang() {
         document.documentElement.lang = lang;
         document.querySelectorAll("[data-i18n]").forEach((el) => {
@@ -601,6 +765,17 @@
         localStorage.getItem("sheepin.session") ||
         (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()));
       localStorage.setItem("sheepin.session", session);
+      // every /api call carries this browser's session id, so each visitor has their own demo herd
+      const _fetch = window.fetch.bind(window);
+      window.fetch = (url, opts = {}) => {
+        if (typeof url === "string" && url.startsWith("/api/")) {
+          opts = {
+            ...opts,
+            headers: { ...(opts.headers || {}), "X-Session-Id": session },
+          };
+        }
+        return _fetch(url, opts);
+      };
       const $ = (id) => document.getElementById(id);
       const note = $("note"),
         log = $("log"),
@@ -734,10 +909,7 @@
                   ? ""
                   : "rejected";
             el.className = "call " + ok;
-            el.textContent =
-              c.name === "cari_ternak"
-                ? `cari ${c.args.ear_tag}`
-                : `${c.name.replace("catat_", "")} ${c.args.ear_tag || ""}${ok === "rejected" ? ": " + (c.result.error || "") : ""}`;
+            el.textContent = `${toolLabel(c.name)} ${c.args.ear_tag || ""}${ok === "rejected" ? ": " + tx(c.result.error || "") : ""}`;
             calls.appendChild(el);
           }
           $("model").textContent = `${j.provider} · ${j.model}`;
@@ -756,6 +928,7 @@
       // ---------- herd, calendar, pedigree ----------
       let selected = null;
       async function loadHerd() {
+        loadToday();
         const j = await (await fetch("/api/herd")).json();
         const tb = $("herd");
         tb.innerHTML = "";
@@ -776,7 +949,7 @@
               ? a.kalender.berikutnya
                   .map(
                     (n) =>
-                      `${n.apa} ${n.mulai}${n.sampai ? "–" + n.sampai : ""}`,
+                      `${tx(n.apa)} ${n.mulai}${n.sampai ? "–" + n.sampai : ""}`,
                   )
                   .join("; ")
               : "";
@@ -793,11 +966,47 @@
           if (a) showDetail(a);
         }
       }
+      async function loadToday() {
+        const j = await (await fetch("/api/hari_ini")).json();
+        const ul = $("today");
+        ul.innerHTML = "";
+        if (!j.daftar.length) {
+          ul.innerHTML = `<li class="empty">${t("nothingToday")}</li>`;
+          return;
+        }
+        for (const i of j.daftar) {
+          const li = document.createElement("li");
+          if (i.apa.includes("lewat")) li.className = "urgent";
+          li.innerHTML = `<span class="tag">${i.ear_tag}</span><span><span class="what">${t("act")[i.apa] || i.apa}</span> <span class="when">${i.kapan}${i.detail ? " · " + tx(i.detail) : ""}</span></span>`;
+          li.addEventListener("click", () => {
+            selected = i.ear_tag;
+            loadHerd();
+          });
+          ul.appendChild(li);
+        }
+      }
       async function showDetail(a) {
         const d = $("detail");
         d.hidden = false;
         $("d-title").textContent =
-          `${a.ear_tag} · ${a.ras || ""} · ${a.umur_bulan != null ? a.umur_bulan + " bln" : ""}`;
+          `${a.ear_tag} · ${a.ras || ""} · ${a.umur_bulan != null ? a.umur_bulan + (lang === "en" ? " mo" : " bln") : ""}`;
+        const pr = $("d-pred");
+        try {
+          const p = await (
+            await fetch(`/api/prediksi/${encodeURIComponent(a.ear_tag)}`)
+          ).json();
+          let html = `<span class="lbl">${t("pregnancy")}</span><p>${Math.round(p.kebuntingan.kemungkinan * 100)}% · ${tx(p.kebuntingan.dasar)}</p>`;
+          if (p.birahi_berikutnya)
+            html += `<span class="lbl">${t("nextHeat")}</span><p>${p.birahi_berikutnya.mulai ? p.birahi_berikutnya.mulai + " – " + p.birahi_berikutnya.sampai + " · " : ""}${t("confidence")} ${conf(p.birahi_berikutnya.keyakinan)} · ${tx(p.birahi_berikutnya.dasar)}</p>`;
+          if (p.perkiraan_beranak)
+            html += `<span class="lbl">${t("due")}</span><p>${p.perkiraan_beranak}${p.hari_bunting != null ? (lang === "en" ? " · day " : " · hari ke-") + p.hari_bunting : ""}</p>`;
+          if (p.siklus && p.siklus.n)
+            html += `<span class="lbl">${t("cycle")}</span><p>${p.siklus.siklus_hari} ${lang === "en" ? "days" : "hari"} (n=${p.siklus.n}${p.siklus.sd != null ? ", sd " + p.siklus.sd : ""})</p>`;
+          pr.innerHTML = html;
+          pr.hidden = false;
+        } catch (e) {
+          pr.hidden = true;
+        }
         const cal = $("d-calendar");
         if (a.kalender && a.kalender.berikutnya.length)
           cal.innerHTML =
@@ -805,7 +1014,7 @@
             a.kalender.berikutnya
               .map(
                 (n) =>
-                  `<li>${n.apa}: ${n.mulai}${n.sampai ? " – " + n.sampai : ""}</li>`,
+                  `<li>${tx(n.apa)}: ${n.mulai}${n.sampai ? " – " + n.sampai : ""}</li>`,
               )
               .join("") +
             "</ul>";

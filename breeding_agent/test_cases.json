@@ -20,7 +20,8 @@
         }
       }
     ],
-    "note": "exact time given -> waktu today 07:00, not estimated"
+    "note": "exact time given -> waktu today 07:00, not estimated",
+    "input_en": "0266 was mated with 0931 this morning at 7"
   },
   {
     "id": 2,
@@ -38,7 +39,8 @@
         }
       }
     ],
-    "note": "no time given -> ask or use now with waktu_perkiraan=true; acceptable: ask"
+    "note": "no time given -> ask or use now with waktu_perkiraan=true; acceptable: ask",
+    "input_en": "0582 looks in heat, her vulva is red and she keeps pacing"
   },
   {
     "id": 3,
@@ -58,7 +60,8 @@
         }
       }
     ],
-    "note": "semalam -> yesterday 21:00 estimated"
+    "note": "semalam -> yesterday 21:00 estimated",
+    "input_en": "0744 lambed two last night, one died"
   },
   {
     "id": 4,
@@ -70,7 +73,8 @@
       }
     ],
     "expect_question": true,
-    "note": "number born missing -> must ask, must not call catat_beranak"
+    "note": "number born missing -> must ask, must not call catat_beranak",
+    "input_en": "0744 lambed last night"
   },
   {
     "id": 5,
@@ -82,7 +86,8 @@
       }
     ],
     "expect_question": true,
-    "note": "ram missing -> ask which ram"
+    "note": "ram missing -> ask which ram",
+    "input_en": "0266 was mated this afternoon"
   },
   {
     "id": 6,
@@ -130,7 +135,8 @@
         "name": "catat_beranak"
       }
     ],
-    "note": "three events in one note, all with a time; all three must be recorded"
+    "note": "three events in one note, all with a time; all three must be recorded",
+    "input_en": "0266 was mated with 0931 this morning, 0582 looked in heat at midday, 0744 lambed two last night, one died"
   },
   {
     "id": 8,
@@ -145,7 +151,8 @@
       }
     ],
     "expect_question": true,
-    "note": "0931 is male in the herd fixture -> agent must flag the swap, not record"
+    "note": "0931 is male in the herd fixture -> agent must flag the swap, not record",
+    "input_en": "0931 was mated with 0266 this morning (0931 is the ram)"
   },
   {
     "id": 9,
@@ -162,7 +169,8 @@
           "skor": 2.5
         }
       }
-    ]
+    ],
+    "input_en": "BCS of 0417 today 2.5"
   },
   {
     "id": 10,
@@ -174,7 +182,8 @@
       }
     ],
     "expect_question": true,
-    "note": "0999 not in herd -> ask to confirm the tag"
+    "note": "0999 not in herd -> ask to confirm the tag",
+    "input_en": "0999 lambed three this morning (0999 is not in the herd)"
   },
   {
     "id": 11,
@@ -210,6 +219,40 @@
         }
       }
     ],
-    "note": "two events for the same animal on different days"
+    "note": "two events for the same animal on different days",
+    "input_en": "0266 was in heat yesterday, mated with 0931 today at 9"
+  },
+  {
+    "id": 13,
+    "lang": "id",
+    "input": "siapa yang perlu dicek hari ini?",
+    "input_en": "who needs checking today?",
+    "expect_calls": [
+      {
+        "name": "ringkasan_hari_ini"
+      }
+    ],
+    "expect_question": false,
+    "note": "must call the read tool and answer from it; no record call"
+  },
+  {
+    "id": 14,
+    "lang": "en",
+    "input": "Is 0417 pregnant? And when is 0744 due?",
+    "expect_calls": [
+      {
+        "name": "prediksi_induk",
+        "args": {
+          "ear_tag": "0417"
+        }
+      },
+      {
+        "name": "prediksi_induk",
+        "args": {
+          "ear_tag": "0744"
+        }
+      }
+    ],
+    "note": "two read calls, answer from their results"
   }
 ]

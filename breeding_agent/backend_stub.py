@@ -5,6 +5,7 @@ In-memory backend for the Sheepin Breeding Agent.
 import json
 import os
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
@@ -25,14 +26,25 @@ def _parse(s):
 
 
 class Backend:
-    def __init__(self, herd_path=None, now=None):
+    def __init__(self, herd_path=None, now=None, tz=None):
         path = herd_path or os.path.join(HERE, "herd_fixture.json")
         with open(path, encoding="utf-8") as f:
             herd = json.load(f)
         self.animals = {a["ear_tag"]: dict(a, larangan_kawin=None) for a in herd}
         self.events = []
-        self.now = now or datetime.now()
+        for a in herd:                       # historical events shipped with the fixture
+            for r in a.get("riwayat", []):
+                self.events.append({"id": len(self.events) + 1, "ear_tag": a["ear_tag"], "dicatat": r["waktu"],
+                                    "waktu_perkiraan": False, "catatan": "riwayat", **r})
+        self.events.sort(key=lambda e: e["waktu"])
+        self._fixed_now = now                      # fixed clock for tests; None = live local time
+        self.tz = tz or os.environ.get("AGENT_TZ", "Asia/Jakarta")
         self._next_tag = 9001
+
+    @property
+    def now(self):
+        """Naive local time in the farm's timezone (servers such as Cloud Run run in UTC)."""
+        return self._fixed_now or datetime.now(ZoneInfo(self.tz)).replace(tzinfo=None, microsecond=0)
 
     # ---------- helpers ----------
     def _log(self, kind, ear_tag, waktu, **data):
@@ -232,9 +244,141 @@ class Backend:
         return {"ok": True, "event": ev, "status": a["status"], "larangan_kawin": a["larangan_kawin"],
                 "peringatan": [], "kalender": {}}
 
+    # ---------- predictions (deterministic + per-animal statistics) ----------
+    BASE_CONCEPTION = 0.80     # typical conception rate per mating in healthy ewes (literature 80-90%)
+
+    def _events(self, tag, kind=None):
+        return [e for e in self.events if e["ear_tag"] == tag and (kind is None or e["jenis"] == kind)]
+
+    def _cycle_stats(self, tag):
+        """Per-animal estrus cycle length from recorded estrus/mating dates (days)."""
+        dates = sorted({_parse(e["waktu"]).date() for e in self._events(tag) if e["jenis"] in ("birahi", "kawin")})
+        gaps = []
+        for a, c in zip(dates, dates[1:]):
+            d = (c - a).days
+            if 12 <= d <= 26:                 # one cycle; longer gaps are skipped cycles or pregnancy
+                gaps.append(d)
+            elif 28 <= d <= 50 and 12 <= d / 2 <= 26:
+                gaps.append(d / 2)            # two cycles with one unobserved estrus
+        if not gaps:
+            return {"siklus_hari": SIKLUS_BIRAHI, "n": 0, "sd": None}
+        m = sum(gaps) / len(gaps)
+        sd = (sum((g - m) ** 2 for g in gaps) / len(gaps)) ** 0.5 if len(gaps) > 1 else None
+        return {"siklus_hari": round(m, 1), "n": len(gaps), "sd": round(sd, 1) if sd is not None else None}
+
+    def prediksi_induk(self, ear_tag):
+        a, err = self._female(ear_tag)
+        if err:
+            return {"ok": False, "error": err}
+        today = self.now.date()
+        evs = self._events(ear_tag)
+        last_kawin = self._last(ear_tag, "kawin")
+        last_est = next((e for e in reversed(evs) if e["jenis"] in ("birahi", "kawin")), None)
+        last_beranak = next((e for e in reversed(evs) if e["jenis"] == "beranak"), None)
+        # an estrus/mating before the last lambing, or older than ~3 cycles, is no basis for projecting cycles
+        if last_est and ((last_beranak and last_est["waktu"] < last_beranak["waktu"]) or
+                         (today - _parse(last_est["waktu"]).date()).days > 3 * SIKLUS_BIRAHI + 5):
+            last_est = None
+        status = a["status"]
+        out = {"ok": True, "ear_tag": ear_tag, "status": status, "larangan_kawin": a.get("larangan_kawin"),
+               "hari_ini": today.isoformat()}
+
+        # --- pregnancy likelihood ---
+        preg = {"kemungkinan": 0.0, "dasar": "tidak ada kawin tercatat"}
+        if status in ("dikawinkan", "indikasi_bunting", "bunting") and last_kawin:
+            k = _parse(last_kawin["waktu"]).date()
+            d = (today - k).days
+            usg = next((e for e in reversed(evs) if e["jenis"] == "cek_bunting"), None)
+            if status == "bunting" or (usg and usg["hasil"] == "bunting" and _parse(usg["waktu"]).date() >= k):
+                preg = {"kemungkinan": 0.98, "dasar": "USG positif"}
+            elif d < CEK_ULANG[0]:
+                preg = {"kemungkinan": self.BASE_CONCEPTION, "dasar": f"hari ke-{d} setelah kawin; kembali birahi belum bisa dinilai"}
+            elif d <= CEK_ULANG[1]:
+                preg = {"kemungkinan": self.BASE_CONCEPTION, "dasar": f"hari ke-{d}: sedang dalam jendela cek birahi ulang"}
+            else:
+                p = min(0.92, self.BASE_CONCEPTION + 0.01 * min(d - CEK_ULANG[1], 12))
+                preg = {"kemungkinan": round(p, 2), "dasar": f"tidak kembali birahi {d} hari setelah kawin; pastikan dengan USG"}
+            out["perkiraan_beranak"] = (k + timedelta(days=LAMA_BUNTING)).isoformat()
+            out["hari_bunting"] = d
+            if status != "bunting":
+                out["usg"] = (k + timedelta(days=USG)).isoformat()
+        elif status == "menyusui":
+            preg = {"kemungkinan": 0.0, "dasar": "sedang menyusui"}
+        out["kebuntingan"] = preg
+
+        # --- next estrus ---
+        cyc = self._cycle_stats(ear_tag)
+        out["siklus"] = cyc
+        if status in ("kosong", "dikawinkan") and last_est:
+            base = _parse(last_est["waktu"]).date()
+            n = base
+            while n <= today - timedelta(days=2):
+                n = n + timedelta(days=round(cyc["siklus_hari"]))
+            margin = 1 if (cyc["n"] >= 2 and (cyc["sd"] or 0) <= 1.5) else 2
+            conf = "tinggi" if cyc["n"] >= 2 and (cyc["sd"] or 0) <= 1.5 else ("sedang" if cyc["n"] >= 1 else "rendah")
+            if status == "dikawinkan":
+                conf = "sedang" if conf == "tinggi" else conf
+            out["birahi_berikutnya"] = {"mulai": (n - timedelta(days=margin)).isoformat(), "sampai": (n + timedelta(days=margin)).isoformat(),
+                                        "keyakinan": conf, "dasar": f"{cyc['n']} siklus tercatat, rata-rata {cyc['siklus_hari']} hari" if cyc["n"] else "siklus standar 17 hari"}
+            if status == "dikawinkan":
+                out["birahi_berikutnya"]["catatan"] = "hanya terjadi bila kawin gagal; kalau muncul, catat sebagai birahi"
+        elif status == "kosong" and not last_est:
+            out["birahi_berikutnya"] = {"keyakinan": "rendah", "dasar": "belum ada birahi tercatat; amati dengan pejantan pengusik"}
+
+        # --- lambing history ---
+        lambings = sorted(_parse(e["waktu"]).date() for e in evs if e["jenis"] == "beranak")
+        if lambings:
+            ivals = [(c - a).days for a, c in zip(lambings, lambings[1:])]
+            out["riwayat_beranak"] = {"jumlah": len(lambings), "terakhir": lambings[-1].isoformat(),
+                                      "interval_hari": ivals[-1] if ivals else None}
+        if last_beranak and status == "menyusui":
+            d = _parse(last_beranak["waktu"]).date()
+            out["sapih"] = [(d + timedelta(days=SAPIH[0])).isoformat(), (d + timedelta(days=SAPIH[1])).isoformat()]
+        return out
+
+    def ringkasan_hari_ini(self, hari_ke_depan=7):
+        today = self.now.date()
+        horizon = today + timedelta(days=int(hari_ke_depan or 7))
+        items = []
+        for tag, a in self.animals.items():
+            if a.get("jenis_kelamin") != "betina" or a.get("status") == "anak":
+                continue
+            p = self.prediksi_induk(tag)
+            if not p.get("ok"):
+                continue
+            if a.get("larangan_kawin"):
+                items.append({"ear_tag": tag, "apa": "larangan kawin aktif", "kapan": today.isoformat(), "detail": a["larangan_kawin"]})
+            if p["status"] == "dikawinkan" and p.get("hari_bunting") is not None:
+                d = p["hari_bunting"]
+                if CEK_ULANG[0] <= d <= CEK_ULANG[1]:
+                    items.append({"ear_tag": tag, "apa": "cek birahi ulang", "kapan": today.isoformat(), "detail": f"hari ke-{d} setelah kawin"})
+            if p.get("usg") and today <= _parse(p["usg"] + "T00:00:00").date() <= horizon:
+                items.append({"ear_tag": tag, "apa": "jadwal USG", "kapan": p["usg"], "detail": p["kebuntingan"]["dasar"]})
+            if p.get("perkiraan_beranak"):
+                due = _parse(p["perkiraan_beranak"] + "T00:00:00").date()
+                if due < today and p["status"] in ("bunting", "indikasi_bunting", "dikawinkan"):
+                    items.append({"ear_tag": tag, "apa": "perkiraan beranak sudah lewat", "kapan": p["perkiraan_beranak"], "detail": f"{(today - due).days} hari lewat; periksa"})
+                elif today <= due <= today + timedelta(days=14):
+                    items.append({"ear_tag": tag, "apa": "mendekati beranak", "kapan": p["perkiraan_beranak"], "detail": f"{(due - today).days} hari lagi"})
+            b = p.get("birahi_berikutnya")
+            if b and b.get("mulai") and p["status"] == "kosong":
+                s, e = _parse(b["mulai"] + "T00:00:00").date(), _parse(b["sampai"] + "T00:00:00").date()
+                if s <= horizon and e >= today:
+                    items.append({"ear_tag": tag, "apa": "perkiraan birahi", "kapan": f"{b['mulai']} - {b['sampai']}", "detail": f"keyakinan {b['keyakinan']}; siapkan pejantan"})
+            if p.get("sapih") and today <= _parse(p["sapih"][1] + "T00:00:00").date() and _parse(p["sapih"][0] + "T00:00:00").date() <= horizon:
+                items.append({"ear_tag": tag, "apa": "jendela sapih", "kapan": f"{p['sapih'][0]} - {p['sapih'][1]}", "detail": ""})
+            if p["status"] == "kosong" and p.get("birahi_berikutnya", {}).get("keyakinan") == "rendah":
+                items.append({"ear_tag": tag, "apa": "belum ada birahi tercatat", "kapan": today.isoformat(), "detail": "amati dengan pejantan pengusik"})
+        order = {"perkiraan beranak sudah lewat": 0, "cek birahi ulang": 1, "mendekati beranak": 2, "perkiraan birahi": 3, "jadwal USG": 4, "jendela sapih": 5, "larangan kawin aktif": 6, "belum ada birahi tercatat": 7}
+        items.sort(key=lambda i: (order.get(i["apa"], 9), i["kapan"]))
+        counts = {}
+        for i in items:
+            counts[i["apa"]] = counts.get(i["apa"], 0) + 1
+        return {"ok": True, "hari_ini": today.isoformat(), "sampai": horizon.isoformat(), "jumlah": len(items), "ringkasan": counts, "daftar": items}
+
     # ---------- dispatch ----------
     TOOLS = ("cari_ternak", "catat_birahi", "catat_kawin", "catat_cek_bunting", "catat_beranak",
-             "catat_keguguran", "catat_sapih", "catat_bcs", "larang_kawin")
+             "catat_keguguran", "catat_sapih", "catat_bcs", "larang_kawin", "ringkasan_hari_ini", "prediksi_induk")
 
     def dispatch(self, name, args):
         if name not in self.TOOLS:
@@ -271,4 +415,12 @@ if __name__ == "__main__":
     assert r["ok"] and r["status"] == "kosong" and r["peringatan"], r
     r = b.dispatch("catat_kawin", {"ear_tag": "0266", "pejantan": "0931", "waktu": "2026-11-05T07:00:00"})
     assert not r["ok"] and "masa depan" in r["error"], r
+    b = Backend(now=datetime(2026, 10, 29, 18, 0, 0))   # fresh herd for prediction checks
+    p = b.dispatch("prediksi_induk", {"ear_tag": "0417"})
+    assert p["ok"] and p["kebuntingan"]["kemungkinan"] >= 0.8 and p["usg"] == "2026-11-19", p
+    p2 = b.dispatch("prediksi_induk", {"ear_tag": "0582"})
+    assert p2["ok"] and p2["siklus"]["n"] == 1 and p2["birahi_berikutnya"]["mulai"] == "2026-10-27", p2
+    r = b.dispatch("ringkasan_hari_ini", {})
+    assert r["ok"] and r["jumlah"] >= 2, r
+    print("prediksi 0582:", p2["birahi_berikutnya"], "| ringkasan:", r["ringkasan"])
     print("backend self-test ok;", len(b.events), "events;", "silsilah:", json.dumps(b.silsilah(r.get("event", {}).get("anak", ["L9001"])[0] if r.get("ok") else "L9001"), ensure_ascii=False))

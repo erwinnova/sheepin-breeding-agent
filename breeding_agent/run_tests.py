@@ -11,7 +11,7 @@ from datetime import datetime
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # run from any directory
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from agent import Agent
 from backend_stub import Backend
@@ -19,6 +19,7 @@ from backend_stub import Backend
 HERE = os.path.dirname(os.path.abspath(__file__))
 RECORD = {"catat_birahi", "catat_kawin", "catat_cek_bunting", "catat_beranak",
           "catat_keguguran", "catat_sapih", "catat_bcs", "larang_kawin"}
+READ = {"ringkasan_hari_ini", "prediksi_induk"}
 
 
 def check(case, calls, reply):
@@ -39,6 +40,13 @@ def check(case, calls, reply):
     for c in got_record:
         if not c["result"].get("ok", False):
             problems.append(f"{c['name']} ditolak backend: {c['result'].get('error')}")
+    for e in exp:
+        if e["name"] in READ:
+            match = [c for c in calls if c["name"] == e["name"] and all(c["args"].get(k) == v for k, v in e.get("args", {}).items())]
+            if not match:
+                problems.append(f"tidak memanggil {e['name']} {e.get('args', '')}")
+    if any(e["name"] in READ for e in exp) and not reply.strip():
+        problems.append("tidak ada jawaban")
     if case.get("expect_question"):
         if got_record:
             problems.append("harusnya bertanya, tetapi mencatat")
@@ -46,6 +54,8 @@ def check(case, calls, reply):
             problems.append("harusnya bertanya, tidak ada tanda tanya")
     if not exp and not case.get("expect_question") and calls:
         problems.append("harusnya tidak memanggil fungsi apa pun")
+    if any(e["name"] in READ for e in exp) and got_record:
+        problems.append("pertanyaan dijawab dengan mencatat sesuatu")
     return problems
 
 

@@ -4,10 +4,13 @@ Sheepin Breeding Agent demo server.
 
 import base64
 import os
+import re
 import sys
+import threading
+import time
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -19,13 +22,37 @@ from transcribe import transcribe            # noqa: E402
 HERE = os.path.dirname(os.path.abspath(__file__))
 app = FastAPI(title="Sheepin Breeding Agent")
 
-STATE = {"backend": Backend(), "agents": {}}
+SESSION_TTL_H = float(os.environ.get("SESSION_TTL_H", "6"))
+MAX_SESSIONS = int(os.environ.get("MAX_SESSIONS", "200"))
+_SID_OK = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+_LOCK = threading.Lock()
+SESSIONS = {}   # sid -> {"backend": Backend, "agent": Agent | None, "seen": epoch seconds}
 
 
-def _agent(session_id: str) -> Agent:
-    if session_id not in STATE["agents"]:
-        STATE["agents"][session_id] = Agent(backend=STATE["backend"])
-    return STATE["agents"][session_id]
+def _session(sid: str) -> dict:
+    sid = sid if sid and _SID_OK.match(sid) else "public"
+    now = time.time()
+    with _LOCK:
+        for k in [k for k, v in SESSIONS.items() if now - v["seen"] > SESSION_TTL_H * 3600]:
+            del SESSIONS[k]
+        if sid not in SESSIONS:
+            if len(SESSIONS) >= MAX_SESSIONS:                      # drop the least recently used
+                del SESSIONS[min(SESSIONS, key=lambda k: SESSIONS[k]["seen"])]
+            SESSIONS[sid] = {"backend": Backend(), "agent": None, "seen": now}
+        s = SESSIONS[sid]
+        s["seen"] = now
+        return s
+
+
+def _backend(sid: str) -> Backend:
+    return _session(sid)["backend"]
+
+
+def _agent(sid: str) -> Agent:
+    s = _session(sid)
+    if s["agent"] is None:
+        s["agent"] = Agent(backend=s["backend"])
+    return s["agent"]
 
 
 class ChatIn(BaseModel):
@@ -47,8 +74,8 @@ def index():
 
 
 @app.post("/api/chat")
-def chat(body: ChatIn):
-    ag = _agent(body.session_id)
+def chat(body: ChatIn, x_session_id: str = Header(default="")):
+    ag = _agent(body.session_id or x_session_id)
     n0 = len(ag.calls)
     reply = ag.send(body.text)
     return {"reply": reply, "calls": ag.calls[n0:], "usage": ag.usage, "provider": ag.provider, "model": ag.model}
@@ -95,8 +122,8 @@ def _calendar(b: Backend, tag: str):
 
 
 @app.get("/api/herd")
-def herd():
-    b = STATE["backend"]
+def herd(x_session_id: str = Header(default="")):
+    b = _backend(x_session_id)
     rows = []
     for tag, a in b.animals.items():
         row = {k: a.get(k) for k in ("ear_tag", "jenis_kelamin", "ras", "umur_bulan", "status", "dam", "sire", "tanggal_lahir")}
@@ -108,20 +135,72 @@ def herd():
 
 
 @app.get("/api/events")
-def events():
-    return {"kejadian": list(reversed(STATE["backend"].events))}
+def events(x_session_id: str = Header(default="")):
+    return {"kejadian": list(reversed(_backend(x_session_id).events))}
 
 
 @app.get("/api/silsilah/{tag}")
-def silsilah(tag: str):
-    t = STATE["backend"].silsilah(tag)
+def silsilah(tag: str, x_session_id: str = Header(default="")):
+    t = _backend(x_session_id).silsilah(tag)
     if not t:
         raise HTTPException(404, "ear tag tidak ada")
     return t
 
 
+@app.get("/api/hari_ini")
+def hari_ini(hari_ke_depan: int = 7, x_session_id: str = Header(default="")):
+    return _backend(x_session_id).ringkasan_hari_ini(hari_ke_depan)
+
+
+@app.get("/api/prediksi/{tag}")
+def prediksi(tag: str, x_session_id: str = Header(default="")):
+    r = _backend(x_session_id).prediksi_induk(tag)
+    if not r.get("ok"):
+        raise HTTPException(404, r.get("error"))
+    return r
+
+
 @app.post("/api/reset")
-def reset():
-    STATE["backend"] = Backend()
-    STATE["agents"] = {}
+def reset(x_session_id: str = Header(default="")):
+    s = _session(x_session_id)
+    with _LOCK:
+        s["backend"], s["agent"] = Backend(), None
     return {"ok": True}
+
+
+@app.get("/api/health")   # not /healthz: Cloud Run reserves paths ending in "z"
+def health():
+    return {"ok": True, "sessions": len(SESSIONS)}
+
+# ---------- test results page ----------
+RESULT_FILES = [("results_baseten.json", "Muse Spark Open (Baseten, open weights)"),
+                ("results_meta.json", "Muse Spark (Meta Model API)")]
+
+
+@app.get("/compare")
+def compare_page():
+    path = os.path.join(HERE, "static", "compare.html")
+    if not os.path.exists(path):
+        raise HTTPException(500, f"static/compare.html tidak ditemukan; letakkan di {path}")
+    return FileResponse(path)
+
+
+@app.get("/api/results")
+def results():
+    import json
+    with open(os.path.join(HERE, "test_cases.json"), encoding="utf-8") as f:
+        cases = json.load(f)
+    runs = []
+    for fn, label in RESULT_FILES:
+        p = os.path.join(HERE, fn)
+        if os.path.exists(p):
+            with open(p, encoding="utf-8") as f:
+                r = json.load(f)
+            runs.append({"label": label, "provider": r.get("provider"), "model": r.get("model") or _model_of(r),
+                         "now": r.get("now"), "passed": r.get("passed"), "total": r.get("total"), "results": r.get("results", [])})
+    return {"cases": cases, "runs": runs}
+
+
+def _model_of(r):
+    from agent import PROVIDERS
+    return PROVIDERS.get(r.get("provider", ""), {}).get("model", "")

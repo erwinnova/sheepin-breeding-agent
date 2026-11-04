@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Sheepin Breeding Agent · test results</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #f3f6f2;
+        --panel: #ffffff;
+        --ink: #17201a;
+        --muted: #5c6b61;
+        --line: #d6dfd8;
+        --green: #1f5f3f;
+        --green-soft: #dcebe1;
+        --amber: #b8780e;
+        --amber-soft: #fbefd2;
+        --red: #9e2b25;
+        --red-soft: #f6dedc;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          color-scheme: dark;
+          --bg: #121a15;
+          --panel: #1a241d;
+          --ink: #ecf1ec;
+          --muted: #a3b3a8;
+          --line: #2c3a30;
+          --green: #7bc59a;
+          --green-soft: #1e3327;
+          --amber: #e6b45c;
+          --amber-soft: #3a2e12;
+          --red: #e58c85;
+          --red-soft: #3d1f1d;
+        }
+      }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+        --bg: #121a15;
+        --panel: #1a241d;
+        --ink: #ecf1ec;
+        --muted: #a3b3a8;
+        --line: #2c3a30;
+        --green: #7bc59a;
+        --green-soft: #1e3327;
+        --amber: #e6b45c;
+        --amber-soft: #3a2e12;
+        --red: #e58c85;
+        --red-soft: #3d1f1d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+        font-size: 16px;
+        line-height: 1.45;
+      }
+      .wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 1.25rem;
+      }
+      h1 {
+        font-size: 1.35rem;
+        color: var(--green);
+        margin: 0 0 0.25rem;
+      }
+      .lead {
+        color: var(--muted);
+        margin: 0 0 1rem;
+        max-width: 70ch;
+      }
+      a {
+        color: var(--green);
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1.2rem;
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+      }
+      .card h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1rem;
+      }
+      .card .model {
+        color: var(--muted);
+        font-size: 0.9rem;
+        word-break: break-all;
+      }
+      .big {
+        font-size: 1.9rem;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.15rem 0.8rem;
+        font-size: 0.93rem;
+        margin-top: 0.5rem;
+      }
+      .kv span:nth-child(odd) {
+        color: var(--muted);
+      }
+      .tablewrap {
+        overflow-x: auto;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 760px;
+        font-size: 0.95rem;
+      }
+      th {
+        text-align: left;
+        color: var(--muted);
+        font-weight: 400;
+        padding: 0.6rem 0.7rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: bottom;
+      }
+      td {
+        padding: 0.55rem 0.7rem;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      td.n {
+        color: var(--muted);
+      }
+      .pass,
+      .fail,
+      .na {
+        display: inline-block;
+        border-radius: 8px;
+        padding: 0.1rem 0.5rem;
+        font-weight: 700;
+      }
+      .pass {
+        background: var(--green-soft);
+        color: var(--green);
+      }
+      .fail {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+      .na {
+        background: var(--bg);
+        color: var(--muted);
+        border: 1px solid var(--line);
+        font-weight: 400;
+      }
+      .calls {
+        color: var(--muted);
+        font-size: 0.88rem;
+        display: block;
+        margin-top: 0.2rem;
+      }
+      .reply {
+        display: block;
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-top: 0.2rem;
+        max-width: 46ch;
+        white-space: pre-wrap;
+      }
+      details {
+        margin-top: 1rem;
+        color: var(--muted);
+        font-size: 0.93rem;
+      }
+      .expect {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .empty {
+        padding: 2rem;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Sheepin Breeding Agent, test results</h1>
+      <p class="lead">
+        The same agent, the same 12 farmer notes (in Bahasa Indonesia, with
+        English below; the agent replies in the farmer’s language), run against
+        each model. A case passes when the agent makes exactly the expected
+        record calls with the stated arguments, the backend accepts them, and
+        when it should ask or refuse, it does. <a href="/">Back to the demo</a>
+      </p>
+      <div class="cards" id="cards"></div>
+      <div class="tablewrap">
+        <table id="tbl">
+          <thead></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <details>
+        <summary>How to read this</summary>
+        <p>
+          Each case lists the note, what the agent must do, and the outcome per
+          model: the record calls made (lookups omitted), the agent's reply, and
+          the time taken. Cases marked “must ask” or “must refuse” test that the
+          agent does not invent data: missing lamb count, missing ram, unknown
+          ear tag, a male recorded as the female, or a question outside breeding
+          records. The clock is fixed so relative times (“tadi pagi”, “semalam”)
+          are checkable. Results files are produced by
+          <code>run_tests.py</code> and are not edited by hand.
+        </p>
+      </details>
+    </div>
+    <script>
+      const READ = new Set(["ringkasan_hari_ini", "prediksi_induk"]);
+      const RECORD = new Set([
+        "catat_birahi",
+        "catat_kawin",
+        "catat_cek_bunting",
+        "catat_beranak",
+        "catat_keguguran",
+        "catat_sapih",
+        "catat_bcs",
+        "larang_kawin",
+      ]);
+      function expectation(c) {
+        if (c.expect_question) return "must ask, not record";
+        const read = (c.expect_calls || []).filter(
+          (e) => e.name === "ringkasan_hari_ini" || e.name === "prediksi_induk",
+        );
+        if (read.length)
+          return (
+            "answer from data: " +
+            read
+              .map(
+                (e) =>
+                  e.name +
+                  (e.args && e.args.ear_tag ? " " + e.args.ear_tag : ""),
+              )
+              .join(", ")
+          );
+        const rec = (c.expect_calls || [])
+          .filter((e) => RECORD.has(e.name))
+          .map((e) => e.name.replace("catat_", ""));
+        if (!rec.length && !(c.expect_calls || []).length)
+          return "must refuse (out of scope)";
+        return "record: " + rec.join(", ");
+      }
+      async function load() {
+        const meta = await (await fetch("/api/results")).json();
+        const cases = meta.cases;
+        const runs = meta.runs; // [{provider, model, now, passed, total, results:[...]}]
+        const cards = document.getElementById("cards");
+        if (!runs.length) {
+          cards.innerHTML =
+            '<div class="card empty">No results yet. Run <code>python run_tests.py --out results_baseten.json</code> in the breeding_agent folder.</div>';
+          return;
+        }
+        for (const r of runs) {
+          const secs = r.results.map((x) => x.seconds).filter(Number.isFinite);
+          const avg = secs.length
+            ? (secs.reduce((a, b) => a + b, 0) / secs.length).toFixed(1)
+            : "–";
+          const reason = r.results
+            .map((x) => (x.usage && x.usage.reasoning) || 0)
+            .reduce((a, b) => a + b, 0);
+          const calls = r.results.reduce(
+            (a, x) => a + (x.calls || []).length,
+            0,
+          );
+          cards.insertAdjacentHTML(
+            "beforeend",
+            `<div class="card"><h2>${r.label}</h2><div class="model">${r.model || ""}</div>
+      <div class="big">${r.passed}/${r.total}</div>
+      <div class="kv"><span>average per note</span><span>${avg} s</span><span>tool calls</span><span>${calls}</span><span>reasoning tokens</span><span>${reason}</span><span>clock</span><span>${r.now ? r.now.replace("T", " ") : "–"}</span></div></div>`,
+          );
+        }
+        const thead = document.querySelector("#tbl thead");
+        thead.innerHTML =
+          "<tr><th>#</th><th>Farmer’s note</th><th>Expected</th>" +
+          runs.map((r) => `<th>${r.label}</th>`).join("") +
+          "</tr>";
+        const tbody = document.querySelector("#tbl tbody");
+        for (const c of cases) {
+          const cells = runs
+            .map((r) => {
+              const x = (r.results || []).find((y) => y.id === c.id);
+              if (!x) return '<td><span class="na">not run</span></td>';
+              const rec = (x.calls || [])
+                .filter((k) => RECORD.has(k.name) || READ.has(k.name))
+                .map(
+                  (k) =>
+                    `${k.name.replace("catat_", "")} ${k.args.ear_tag || ""}${k.result && k.result.ok === false ? " (rejected)" : ""}`,
+                );
+              const problems = x.pass
+                ? ""
+                : `<span class="calls">${(x.problems || []).join("; ")}</span>`;
+              return `<td><span class="${x.pass ? "pass" : "fail"}">${x.pass ? "pass" : "fail"}</span> <span class="calls">${x.seconds} s</span>
+        <span class="calls">${rec.length ? rec.join(", ") : "no record call"}</span>${problems}
+        <span class="reply">${(x.reply || "").slice(0, 220)}</span></td>`;
+            })
+            .join("");
+          const note = c.input_en
+            ? `${c.input}<span class="calls">${c.input_en}</span>`
+            : c.input;
+          tbody.insertAdjacentHTML(
+            "beforeend",
+            `<tr><td class="n">${c.id}</td><td>${note}</td><td class="expect">${expectation(c)}</td>${cells}</tr>`,
+          );
+        }
+      }
+      load();
+    </script>
+  </body>
+</html>
